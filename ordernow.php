@@ -21,28 +21,29 @@ session_start();
       <div class="products">
         <h2>Our Products</h2>
 
+        <div class="search-box">
+  <input type="text" id="searchInput" placeholder="Search pastry..." onkeyup="searchProducts()">
+</div>
+
         <div class="product-list">
-          <div class="product-card">
-            <img src="assets/placeholder.jpg" />
-            <h3>Customized Cake</h3>
-            <p>Personalized cake</p>
-            <div class="price">
+        <div class="product-card">
+            <img src="assets/cake_2.jpg" />
+              <h3>Customized Cake</h3>
               <p>
-                Price may vary depending on design, size, and customization.
+              Personalized cake for birthdays, celebrations, and special occasions.
               </p>
-              Stars at ₱1200
-            </div>
-            <button
-              onclick="
-                addToCart('Customized Cake', 1200, 'customized-cake.jpg')
-              "
-            >
-              Add to Cart
-            </button>
-          </div>
+
+                <div class="price">
+                  Price depends on size, design, and customization.
+              </div>
+
+                  <a href="https://web.facebook.com/Jsweetsandpastries" target="_blank">
+                <button type="button">Inquire on our Facebook Page</button>
+                  </a>
+              </div>
 
           <div class="product-card">
-            <img src="assets/placeholder.jpg" />
+            <img src="assets/banana-cake.jpg" />
             <h3>Banana Cake</h3>
             <p>Moist banana cake</p>
             <div class="price">₱120</div>
@@ -52,23 +53,23 @@ session_start();
           </div>
 
           <div class="product-card">
-            <img src="assets/placeholder.jpg" />
+            <img src="assets/leche_flan.jpg" />
             <h3>Leche Flan</h3>
             <p>Classic Filipino leche flan</p>
-            <div class="price">₱100</div>
-            <button onclick="addToCart('Leche Flan', 100, 'leche-flan.jpg')">
+            <div class="price">₱120</div>
+            <button onclick="addToCart('Leche Flan', 120, 'leche_flan.jpg')">
               Add to Cart
             </button>
           </div>
 
           <div class="product-card">
-            <img src="assets/placeholder.jpg" />
+            <img src="assets/choco_crinkles.jpg" />
             <h3>Chocolate Crinkles</h3>
             <p>Delightful chocolate crinkles</p>
             <div class="price">₱120</div>
             <button
               onclick="
-                addToCart('Chocolate Crinkles', 120, 'chocolate-crinkles.jpg')
+                addToCart('Chocolate Crinkles', 120, 'choco_crinkles.jpg')
               "
             >
               Add to Cart
@@ -76,13 +77,56 @@ session_start();
           </div>
 
           <div class="product-card">
-            <img src="assets/placeholder.jpg" />
+            <img src="assets/cookies.jpg" />
             <h3>Chocolate Cookies</h3>
             <p>Delightful chocolate cookies</p>
-            <div class="price">₱100</div>
+            <div class="price">₱120</div>
             <button
-              onclick="addToCart('Chocolate Cookies', 100, 'cookies.jpg')"
+              onclick="addToCart('Chocolate Cookies', 120, 'cookies.jpg')"
             >
+              Add to Cart
+            </button>
+          </div>
+
+                    <div class="product-card">
+            <img src="assets/yema-cake.jpg" />
+            <h3>Yema Cake</h3>
+            <p>Delightful yema cake</p>
+            <div class="price">₱120</div>
+            <button
+              onclick="addToCart('Yema Cake', 120, 'yema-cake.jpg')">
+              Add to Cart
+            </button>
+          </div>
+
+            <div class="product-card">
+            <img src="assets/mango_graham.jpg" />
+            <h3>Mango Graham</h3>
+            <p>Delightful mango graham</p>
+            <div class="price">₱120</div>
+            <button
+              onclick="addToCart('Mango Graham', 120, 'mango_graham.jpg')">
+              Add to Cart
+            </button>
+          </div>
+
+          <div class="product-card">
+            <img src="assets/moist_cake.jpg" />
+            <h3>Moist Cake</h3>
+            <p>Delightful moist cake</p>
+            <div class="price">₱120</div>
+            <button onclick="addToCart('Moist Cake', 120, 'moist_cake.jpg')">
+              Add to Cart
+            </button>
+          </div>
+
+
+            <div class="product-card">
+            <img src="assets/macaroons.jpg" />
+            <h3>Macaroons</h3>
+            <p>Delightful macaroons</p>
+            <div class="price">₱120</div>
+            <button onclick="addToCart('Macaroons', 120, 'macaroons.jpg')">
               Add to Cart
             </button>
           </div>
@@ -229,6 +273,22 @@ session_start();
 
         window.location.href = "checkout.php?data=" + encodedData;
       }
+
+      function searchProducts() {
+  const input = document.getElementById("searchInput").value.toLowerCase();
+  const cards = document.querySelectorAll(".product-card");
+
+  cards.forEach(function(card) {
+    const productName = card.querySelector("h3").textContent.toLowerCase();
+    const productDesc = card.querySelector("p").textContent.toLowerCase();
+
+    if (productName.includes(input) || productDesc.includes(input)) {
+      card.style.display = "flex";
+    } else {
+      card.style.display = "none";
+    }
+  });
+}
     </script>
   </body>
 </html>

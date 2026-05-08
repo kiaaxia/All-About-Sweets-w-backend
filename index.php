@@ -56,7 +56,7 @@ if(isset($_SESSION['user_id '])){
       </div>
 
       <div class="hero-img">
-        <img src="assets/cake.jpg" alt="Cake" />
+        <img src="assets/cakee.jpg" alt="Cake" />
       </div>
     </section>
     <br />
@@ -67,95 +67,83 @@ if(isset($_SESSION['user_id '])){
         <!-- ORIGINAL -->
         <div class="item">
           <div class="card">
-            <img src="assets/placeholder.jpg">
-            <h3>tinapay</h3>
+            <img src="assets/cookies.jpg">
+            <h3>cookies</h3>
           </div>
         </div>
         <div class="item">
           <div class="card">
-            <img src="assets/placeholder.jpg">
-            <h3>tinapay</h3>
+            <img src="assets/mango_graham.jpg">
+            <h3>Mango Graham</h3>
           </div>
         </div>
         <div class="item">
           <div class="card">
-            <img src="assets/placeholder.jpg">
-            <h3>tinapay</h3>
+            <img src="assets/banana-cake.jpg">
+            <h3>Banana Cake</h3>
           </div>
         </div>
         <div class="item">
           <div class="card">
-            <img src="assets/placeholder.jpg">
-            <h3>tinapay</h3>
-          </div>
-        </div>
-        <div class="item">
-          <div class="card">
-            <img src="assets/placeholder.jpg">
-            <h3>tinapay</h3>
+            <img src="assets/choco_crinkles.jpg">
+            <h3>Chocolate Crinkles</h3>
           </div>
         </div>
         <!-- DUPLICATE 1 -->
         <div class="item">
           <div class="card">
-            <img src="assets/placeholder.jpg">
-            <h3>tinapay</h3>
+            <img src="assets/macaroons.jpg">
+            <h3>Macaroons</h3>
           </div>
         </div>
         <div class="item">
           <div class="card">
-            <img src="assets/placeholder.jpg">
-            <h3>tinapay</h3>
+            <img src="assets/yema-cake.jpg">
+            <h3>Yema Cake</h3>
           </div>
         </div>
         <div class="item">
           <div class="card">
-            <img src="assets/placeholder.jpg">
-            <h3>tinapay</h3>
+            <img src="assets/cake-pink.jpg">
+            <h3>Cake</h3>
           </div>
         </div>
         <div class="item">
           <div class="card">
-            <img src="assets/placeholder.jpg">
-            <h3>tinapay</h3>
-          </div>
-        </div>
-        <div class="item">
-          <div class="card">
-            <img src="assets/placeholder.jpg">
-            <h3>tinapay</h3>
+            <img src="assets/cake_cars.jpg">
+            <h3>Cake</h3>
           </div>
         </div>
 
         <!-- DUPLICATE 2 (THIS FIXES THE GAP) -->
         <div class="item">
           <div class="card">
-            <img src="assets/placeholder.jpg">
-            <h3>tinapay</h3>
+            <img src="assets/cookies.jpg">
+            <h3>Cookies</h3>
           </div>
         </div>
         <div class="item">
           <div class="card">
-            <img src="assets/placeholder.jpg">
-            <h3>tinapay</h3>
+            <img src="assets/macaroons.jpg">
+            <h3>Macaroons</h3>
           </div>
         </div>
         <div class="item">
           <div class="card">
-            <img src="assets/placeholder.jpg">
-            <h3>tinapay</h3>
+            <img src="assets/yema-cake.jpg">
+            <h3>Yema Cake</h3>
           </div>
         </div>
         <div class="item">
           <div class="card">
-            <img src="assets/placeholder.jpg">
-            <h3>tinapay</h3>
+            <img src="assets/cake.jpg">
+            <h3>Cake</h3>
           </div>
         </div>
         <div class="item">
           <div class="card">
-            <img src="assets/placeholder.jpg">
-            <h3>tinapay</h3>
+            <img src="assets/choco_crinkles.jpg">
+            <h3>Chocolate Crinkles</h3>
           </div>
         </div>
       </div>
