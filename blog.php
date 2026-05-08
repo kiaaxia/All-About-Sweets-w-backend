@@ -1,3 +1,6 @@
+<?php
+session_start();
+?>
 <!doctype html>
 <html lang="en">
   <head>
@@ -20,11 +23,17 @@
 
     <nav class="nav-menu">
       <a href="index.php" class="active">Home</a>
-      <a href="flavors.php">Flavors</a>
+      <!-- <a href="flavors.php">Flavors</a> -->
       <a href="index.php#story">Story</a>
       <a href="blog.php">Blog</a>
       <button class="order-btn">Order Now</button>
-      <a href="#" class="login">Login</a>
+      <?php if (isset($_SESSION["user_id"])) { ?>
+  <a href="user-profile.php">
+    <img src="assets/user.png" class="profile-icon" alt="Profile">
+  </a>
+<?php } else { ?>
+  <a href="login.php" class="login">Login</a>
+<?php } ?>
     </nav>
   </header>
   <body>

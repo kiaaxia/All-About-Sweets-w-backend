@@ -1,240 +1,217 @@
 <!doctype html>
-
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Checkout</title>
-    <link rel="stylesheet" href="checkout.css" />
-  </head>
-  <body>
-    <h1>Place Your Order</h1>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkout</title>
+  <link rel="stylesheet" href="checkout.css" />
+  <link rel="shortcut icon" href="assets/AASlogo.png" type="image/x-icon">
+</head>
 
-    <!-- EMPTY VIEW -->
+<body>
+  <h1>Place Your Order</h1>
 
-    <div id="empty-view" class="empty">
-      <h2>Your Cart is Empty</h2>
-      <p>Add some items to your cart before placing an order</p>
-      <button onclick="goBack()">Start Shopping</button>
-    </div>
+  <div id="empty-view" class="empty">
+    <h2>Your Cart is Empty</h2>
+    <p>Add some items to your cart before placing an order.</p>
+    <button onclick="goBack()">Start Shopping</button>
+  </div>
 
-    <!-- CHECKOUT VIEW -->
+  <div id="checkout-view" class="checkout-container" style="display: none">
+    <div class="delivery-info">
+      <h2>Order Information</h2>
 
-    <div id="checkout-view" class="checkout-container" style="display: none">
-      <!-- DELIVERY -->
+      <label>Full Name</label>
+      <input type="text" id="fullname" placeholder="Enter your full name" />
 
-      <div class="delivery-info">
-        <h2>Delivery Information</h2>
+      <label>Contact Number</label>
+      <input type="text" id="contact" placeholder="09XX XXX XXXX" minlength="11" maxlength="11" />
 
-        <!-- FULL NAME -->
+      <label>Order Type</label>
+      <div class="radio-group">
+        <label>
+          <input type="radio" name="type" value="pickup" onclick="selectType('pickup')" />
+          Pickup
+        </label>
 
-        <label>Full Name</label>
-        <input
-          type="text"
-          id="fullname"
-          placeholder="Enter your full name"
-          required
-        />
-
-        <!-- CONTACT -->
-
-        <label>Contact Number</label>
-        <input
-          type="text"
-          id="contact"
-          placeholder="09XX XXX XXXX"
-          minlength="11"
-          maxlength="11"
-          required
-        />
-
-        <!-- ORDER TYPE -->
-
-        <label>Order Type</label>
-
-        <div class="radio-group">
-          <label
-            ><input type="radio" name="type" onclick="selectType('pickup')" />
-            Pickup</label
-          >
-          <label
-            ><input type="radio" name="type" onclick="selectType('delivery')" />
-            Delivery</label
-          >
-        </div>
-
-        <!-- PICKUP LOCATION -->
-
-        <div id="pickup-options" style="display: none">
-          <label>Pickup Location</label>
-          <div class="radio-group">
-            <label><input type="radio" name="pickup" /> Owner Address</label>
-            <label
-              ><input type="radio" name="pickup" /> Trinoma / SM North</label
-            >
-          </div>
-        </div>
-
-        <!-- ADDRESS -->
-
-        <div id="address-field" style="display: none">
-          <label>Address</label>
-          <input
-            type="text"
-            id="address"
-            placeholder="Your delivery address"
-            required
-          />
-        </div>
-
-        <!-- TIME -->
-
-        <label>Preferred Pickup / Delivery Time</label>
-        <input type="time" id="time" min="08:00" max="17:00" required />
-
-        <p style="font-size: 12px; color: #777">
-          Please allow at least 24 hours for preparation.
-        </p>
-
-        <!-- PAYMENT -->
-
-        <label>Payment Method</label>
-
-        <div class="radio-group">
-          <label><input type="radio" name="payment" /> Cash on Delivery</label>
-          <label><input type="radio" name="payment" /> GCash</label>
-        </div>
-
-        <button class="place-order-btn" onclick="placeOrder()">
-          Place Order
-        </button>
+        <label>
+          <input type="radio" name="type" value="delivery" onclick="selectType('delivery')" />
+          Delivery
+        </label>
       </div>
 
-      <!-- SUMMARY -->
+      <div id="pickup-options" style="display: none">
+        <label>Pickup Location</label>
 
-      <div class="order-summary">
-        <h2 class="order-sum-text">Order Summary</h2>
+        <div class="radio-group">
+          <label>
+            <input type="radio" name="pickup" value="Owner Address" />
+            Owner Address
+          </label>
 
-        <div id="summary-items"></div>
-
-        <div id="summary-total"></div>
-
-        <p style="font-size: 12px">
-          Note: You will receive confirmation after order.
-        </p>
+          <label>
+            <input type="radio" name="pickup" value="Trinoma / SM North" />
+            Trinoma / SM North
+          </label>
+        </div>
       </div>
+
+      <div id="address-field" style="display: none">
+        <label>Delivery Address</label>
+        <input type="text" id="address" placeholder="Enter your delivery address" />
+      </div>
+
+      <label>Preferred Pickup / Delivery Time</label>
+      <input type="time" id="time" min="08:00" max="17:00" />
+
+      <p class="note">
+        Orders are only accepted from 8:00 AM to 5:00 PM. Please allow at least 24 hours for preparation.
+      </p>
+
+      <label>Payment Method</label>
+      <div class="payment-box">
+        <strong>Cash on Delivery / Cash on Pickup</strong>
+        <p>Payment will be collected when your order is delivered or picked up.</p>
+      </div>
+
+      <button class="place-order-btn" onclick="placeOrder()">Place Order</button>
     </div>
 
-    <script>
-      /* SAME DATA STRUCTURE AS ORDER PAGE */
-      let names = [];
-      let prices = [];
-      let quantities = [];
-      let images = [];
+    <div class="order-summary">
+      <h2 class="order-sum-text">Order Summary</h2>
 
-      /* GET DATA FROM URL */
-      function getCartFromURL() {
-        let url = window.location.href;
+      <div id="summary-items"></div>
+      <div id="summary-total"></div>
 
-        if (url.indexOf("?data=") == -1) {
-          return;
-        }
+      <p class="note">Note: You will receive confirmation after placing your order.</p>
+    </div>
+  </div>
 
-        let dataString = decodeURIComponent(url.split("?data=")[1]);
+  <script>
+    let names = [];
+    let prices = [];
+    let quantities = [];
+    let images = [];
 
-        let items = dataString.split("|");
+    function getCartFromURL() {
+      let url = window.location.href;
 
-        for (let i = 0; i < items.length; i++) {
-          let parts = items[i].split(",");
-
-          names.push(parts[0]);
-          prices.push(parseInt(parts[1]));
-          quantities.push(parseInt(parts[2]));
-          images.push(parts[3]);
-        }
+      if (url.indexOf("?data=") == -1) {
+        return;
       }
 
-      /* CHECK EMPTY OR NOT */
-      function checkCart() {
-        if (names.length == 0) {
-          document.getElementById("empty-view").style.display = "block";
-          document.getElementById("checkout-view").style.display = "none";
-        } else {
-          document.getElementById("empty-view").style.display = "none";
-          document.getElementById("checkout-view").style.display = "flex";
-          displaySummary();
-        }
+      let dataString = decodeURIComponent(url.split("?data=")[1]);
+      let items = dataString.split("|");
+
+      for (let i = 0; i < items.length; i++) {
+        let parts = items[i].split(",");
+
+        names.push(parts[0]);
+        prices.push(parseInt(parts[1]));
+        quantities.push(parseInt(parts[2]));
+        images.push(parts[3]);
       }
+    }
 
-      /* DISPLAY SUMMARY */
-      function displaySummary() {
-        let output = "";
-        let total = 0;
+    function checkCart() {
+      if (names.length == 0) {
+        document.getElementById("empty-view").style.display = "block";
+        document.getElementById("checkout-view").style.display = "none";
+      } else {
+        document.getElementById("empty-view").style.display = "none";
+        document.getElementById("checkout-view").style.display = "flex";
+        displaySummary();
+      }
+    }
 
-        for (let i = 0; i < names.length; i++) {
-          total = total + prices[i] * quantities[i];
+    function displaySummary() {
+      let output = "";
+      let total = 0;
 
-          output =
-            output +
-            "<div class='summary-item'>" +
-            "<img src='" +
-            images[i] +
-            "'>" +
-            "<div>" +
-            "<b>" +
-            names[i] +
-            "</b><br>" +
-            "Qty: " +
-            quantities[i] +
-            "</div>" +
-            "<div style='margin-left:auto;'>₱" +
-            prices[i] +
-            "</div>" +
-            "</div>";
-        }
+      for (let i = 0; i < names.length; i++) {
+        let itemTotal = prices[i] * quantities[i];
+        total += itemTotal;
 
-        document.getElementById("summary-items").innerHTML = output;
-
-        document.getElementById("summary-total").innerHTML =
-          "Subtotal: ₱" +
-          total +
-          "<br>Delivery: Free" +
-          "<br><div class='total'>Total: ₱" +
-          total +
+        output +=
+          "<div class='summary-item'>" +
+          "<img src='" + images[i] + "'>" +
+          "<div>" +
+          "<b>" + names[i] + "</b><br>" +
+          "Qty: " + quantities[i] +
+          "</div>" +
+          "<div style='margin-left:auto;'>₱" + itemTotal + "</div>" +
           "</div>";
       }
 
-      /* BUTTONS */
-      function placeOrder() {
-        let fullname = document.getElementById("fullname").value;
-        let contact = document.getElementById("contact").value;
-        let time = document.getElementById("time").value;
+      document.getElementById("summary-items").innerHTML = output;
 
-        if (fullname == "" || contact == "" || time == "") {
-          alert("Please fill out all required fields!");
-          return;
-        }
+      document.getElementById("summary-total").innerHTML =
+        "Subtotal: ₱" + total +
+        "<br>Delivery Fee: To be confirmed" +
+        "<br><div class='total'>Total: ₱" + total + "</div>";
+    }
 
-        alert("Order placed!");
+    function selectType(type) {
+      const pickupOptions = document.getElementById("pickup-options");
+      const addressField = document.getElementById("address-field");
+
+      if (type == "pickup") {
+        pickupOptions.style.display = "block";
+        addressField.style.display = "none";
+      } else {
+        pickupOptions.style.display = "none";
+        addressField.style.display = "block";
+      }
+    }
+
+    function placeOrder() {
+      let fullname = document.getElementById("fullname").value.trim();
+      let contact = document.getElementById("contact").value.trim();
+      let time = document.getElementById("time").value;
+
+      let selectedType = document.querySelector("input[name='type']:checked");
+      let selectedPickup = document.querySelector("input[name='pickup']:checked");
+      let address = document.getElementById("address").value.trim();
+
+      if (fullname == "" || contact == "" || time == "") {
+        alert("Please fill out all required fields!");
+        return;
       }
 
-      function goBack() {
-        window.location.href = "ordernow.html";
+      if (contact.length !== 11 || isNaN(contact)) {
+        alert("Please enter a valid 11-digit contact number.");
+        return;
       }
 
-      /* RUN */
-      getCartFromURL();
-      checkCart();
-
-      function selectType(type) {
-        if (type == "pickup") {
-          document.getElementById("pickup-options").style.display = "block";
-          document.getElementById("address-field").style.display = "none";
-        } else {
-          document.getElementById("pickup-options").style.display = "none";
-          document.getElementById("address-field").style.display = "block";
-        }
+      if (!selectedType) {
+        alert("Please select pickup or delivery.");
+        return;
       }
-    </script>
-  </body>
+
+      if (selectedType.value === "pickup" && !selectedPickup) {
+        alert("Please select a pickup location.");
+        return;
+      }
+
+      if (selectedType.value === "delivery" && address == "") {
+        alert("Please enter your delivery address.");
+        return;
+      }
+
+      if (time < "08:00" || time > "17:00") {
+        alert("Please choose a time between 8:00 AM and 5:00 PM only.");
+        return;
+      }
+
+      alert("Order placed successfully! Payment method: Cash only.");
+    }
+
+    function goBack() {
+      window.location.href = "ordernow.php";
+    }
+
+    getCartFromURL();
+    checkCart();
+  </script>
+</body>
 </html>

@@ -1,3 +1,7 @@
+  <?php
+session_start();
+?>
+
 <!doctype html>
 
 <html lang="en">
@@ -223,7 +227,7 @@
 
         let encodedData = encodeURIComponent(data);
 
-        window.location.href = "checkout.html?data=" + encodedData;
+        window.location.href = "checkout.php?data=" + encodedData;
       }
     </script>
   </body>
