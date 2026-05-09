@@ -2,51 +2,47 @@
 session_start();
 include "db.php";
 
-$error = "";
+$message = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $email = trim($_POST["email"]);
-    $password = $_POST["password"];
 
-    if (empty($email) || empty($password)) {
-        $error = "All fields are required!";
-    } else {
-        $stmt = $conn->prepare("SELECT id, name, email, phone, password, role FROM users WHERE email = ?");
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
+    $email = $_POST['email'];
+    $password = $_POST['password'];
 
-        $result = $stmt->get_result();
+    $query = "SELECT * FROM users 
+              WHERE email='$email' 
+              AND password='$password'";
 
-        if ($result->num_rows === 1) {
-            $user = $result->fetch_assoc();
+    $result = mysqli_query($conn, $query);
 
-            // For now, plain password muna kasi yung signup.php niyo plain password pa rin.
-            // Later, better palitan ito ng password_hash() and password_verify().
-            if ($password === $user["password"]) {
+    if (mysqli_num_rows($result) > 0) {
 
-                $_SESSION["user_id"] = $user["id"];
-                $_SESSION["user_name"] = $user["name"];
-                $_SESSION["user_email"] = $user["email"];
-                $_SESSION["user_phone"] = $user["phone"];
-                $_SESSION["role"] = $user["role"];
+        $row = mysqli_fetch_assoc($result);
 
-                if ($user["role"] === "admin") {
-                    header("Location: admin.php");
-                    exit;
-                } else {
-                    header("Location: index.php");
-                    exit;
-                }
+        $_SESSION['user_id'] = $row['id'];
+        $_SESSION['name'] = $row['name'];
+        $_SESSION['role'] = $row['role'];
 
-            } else {
-                $error = "Incorrect password!";
-            }
+        // Admin redirect
+        if ($row['role'] == "admin") {
+
+            header("Location: admin_dashboard.php");
+
         } else {
-            $error = "Email not found!";
+
+            header("Location: user_dashboard.php");
+
         }
+
+        exit();
+
+    } else {
+
+        $message = "Invalid email or password!";
     }
 }
 ?>
+
 
 <!doctype html>
 <html lang="en">
