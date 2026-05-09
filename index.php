@@ -104,7 +104,7 @@ if(isset($_SESSION['user_id '])){
         </div>
         <div class="item">
           <div class="card">
-            <img src="assets/cake-pink.jpg">
+            <img src="assets/cake_2.jpg">
             <h3>Cake</h3>
           </div>
         </div>
@@ -187,32 +187,7 @@ if(isset($_SESSION['user_id '])){
         </div> -->
       </div>
     </section>
-    <!-- <footer class="footer">
-      <div class="footer-container">
-        <div class="footer-logo">
-          <span>All About Sweets</span>
-        </div>
 
-        <ul class="footer-links">
-          <li><a href="#hero">Home</a></li>
-          <li><a href="flavors.html">Flavors</a></li>
-          <li><a href="#story">Story</a></li>
-          <li><a href="blog.html">Blog</a></li>
-          <li><a href="faq.html">FAQ</a></li>
-        </ul>
-
-        <p class="footer-copy">© 2026 All About Sweets. All rights reserved.</p>
-      </div>
-    </footer> -->
-
-    <!-- Call-to-action -->
-    <section class="cta-section">
-      <h2>Ready to Order?</h2>
-      <p>Treat yourself or someone special to our delicious homemade sweets</p>
-      <a href="ordernow.php"> 
-      <button class="cta-button">Start Your Order</button>
-      </a>
-    </section>
 <section id="faq" class="faq-section">
       <h2>Frequently Asked Questions</h2>
       <p class="subtitle">Everything you need to know</p>
@@ -265,11 +240,6 @@ if(isset($_SESSION['user_id '])){
         </div>
       </div>
     </section>
-    <!-- <section class="cta-section">
-      <h2>Ready to Order?</h2>
-      <p>Treat yourself or someone special to our delicious homemade sweets</p>
-      <button class="cta-button">Start Your Order</button>
-    </section> -->
 
     <!-- Call-to-action -->
     <section class="cta-section">
