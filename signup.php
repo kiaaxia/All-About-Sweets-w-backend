@@ -1,4 +1,3 @@
-gnup.php
 <?php
 include "db.php";
 
