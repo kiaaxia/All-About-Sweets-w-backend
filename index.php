@@ -294,38 +294,32 @@ if(isset($_SESSION['user_id '])){
       <small>© 2026 All About Sweets. All rights reserved.</small>
     </footer>
 
-    <script>
-      // login nav bar -- profile icon
-      const user = JSON.parse(localStorage.getItem("user"));
+<script>
+  // FAQ TOGGLE
+  const questions = document.querySelectorAll(".faq-question");
 
-      const loginBtn = document.getElementById("loginBtn");
-      const profileBtn = document.getElementById("profileBtn");
+  questions.forEach((question) => {
+    question.addEventListener("click", () => {
+      const answer = question.nextElementSibling;
 
-      if (user) {
-  // user is logged in
-      loginBtn.style.display = "none";
-      profileBtn.style.display = "block";
-    } else {
-  // not logged in
-      loginBtn.style.display = "block";
-       profileBtn.style.display = "none";
-    }
-
-function goToProfile() {
-  window.location.href = "user-profile.php";
-}
-
-
-      //FAQs js
-            const questions = document.querySelectorAll(".faq-question");
-
-      questions.forEach((question) => {
-        question.addEventListener("click", () => {
-          const answer = question.nextElementSibling;
-          question.classList.toggle("active");
-          answer.classList.toggle("open");
-        });
+      // close other open faqs
+      document.querySelectorAll(".faq-answer").forEach((item) => {
+        if (item !== answer) {
+          item.classList.remove("open");
+        }
       });
-    </script>
+
+      document.querySelectorAll(".faq-question").forEach((item) => {
+        if (item !== question) {
+          item.classList.remove("active");
+        }
+      });
+
+      // toggle clicked faq
+      question.classList.toggle("active");
+      answer.classList.toggle("open");
+    });
+  });
+</script>
   </body>
 </html>
