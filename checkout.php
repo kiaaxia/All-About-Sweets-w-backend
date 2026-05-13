@@ -61,8 +61,23 @@
         <input type="text" id="address" placeholder="Enter your delivery address" />
       </div>
 
+      <label>Preferred Pickup / Delivery Date</label>
+      <input type="date" id="date" required />
       <label>Preferred Pickup / Delivery Time</label>
-      <input type="time" id="time" min="08:00" max="17:00" />
+      <select id="time">
+        <option value="">Select preferred time</option>
+        <option value="08:00 AM">08:00 AM</option>
+        <option value="09:00 AM">09:00 AM</option>
+        <option value="10:00 AM">10:00 AM</option>
+        <option value="11:00 AM">11:00 AM</option>
+        <option value="12:00 PM">12:00 PM</option>
+        <option value="01:00 PM">01:00 PM</option>
+        <option value="02:00 PM">02:00 PM</option>
+        <option value="03:00 PM">03:00 PM</option>
+        <option value="04:00 PM">04:00 PM</option>
+        <option value="05:00 PM">05:00 PM</option>
+      </select>
+
 
       <p class="note">
         Orders are only accepted from 8:00 AM to 5:00 PM. Please allow at least 24 hours for preparation.
@@ -212,6 +227,21 @@
 
     getCartFromURL();
     checkCart();
+
+
+      const dateInput = document.getElementById("date");
+
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const yyyy = tomorrow.getFullYear();
+      const mm = String(tomorrow.getMonth() + 1).padStart(2, "0");
+      const dd = String(tomorrow.getDate()).padStart(2, "0");
+
+      const tomorrowDate = `${yyyy}-${mm}-${dd}`;
+
+      dateInput.min = tomorrowDate;
+      dateInput.max = tomorrowDate;
   </script>
 </body>
 </html>

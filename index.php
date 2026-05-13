@@ -104,7 +104,7 @@ if(isset($_SESSION['user_id '])){
         </div>
         <div class="item">
           <div class="card">
-            <img src="assets/cake-pink.jpg">
+            <img src="assets/cake_2.jpg">
             <h3>Cake</h3>
           </div>
         </div>
@@ -187,32 +187,7 @@ if(isset($_SESSION['user_id '])){
         </div> -->
       </div>
     </section>
-    <!-- <footer class="footer">
-      <div class="footer-container">
-        <div class="footer-logo">
-          <span>All About Sweets</span>
-        </div>
 
-        <ul class="footer-links">
-          <li><a href="#hero">Home</a></li>
-          <li><a href="flavors.html">Flavors</a></li>
-          <li><a href="#story">Story</a></li>
-          <li><a href="blog.html">Blog</a></li>
-          <li><a href="faq.html">FAQ</a></li>
-        </ul>
-
-        <p class="footer-copy">© 2026 All About Sweets. All rights reserved.</p>
-      </div>
-    </footer> -->
-
-    <!-- Call-to-action -->
-    <section class="cta-section">
-      <h2>Ready to Order?</h2>
-      <p>Treat yourself or someone special to our delicious homemade sweets</p>
-      <a href="ordernow.php"> 
-      <button class="cta-button">Start Your Order</button>
-      </a>
-    </section>
 <section id="faq" class="faq-section">
       <h2>Frequently Asked Questions</h2>
       <p class="subtitle">Everything you need to know</p>
@@ -265,11 +240,6 @@ if(isset($_SESSION['user_id '])){
         </div>
       </div>
     </section>
-    <!-- <section class="cta-section">
-      <h2>Ready to Order?</h2>
-      <p>Treat yourself or someone special to our delicious homemade sweets</p>
-      <button class="cta-button">Start Your Order</button>
-    </section> -->
 
     <!-- Call-to-action -->
     <section class="cta-section">
@@ -294,38 +264,32 @@ if(isset($_SESSION['user_id '])){
       <small>© 2026 All About Sweets. All rights reserved.</small>
     </footer>
 
-    <script>
-      // login nav bar -- profile icon
-      const user = JSON.parse(localStorage.getItem("user"));
+<script>
+  // FAQ TOGGLE
+  const questions = document.querySelectorAll(".faq-question");
 
-      const loginBtn = document.getElementById("loginBtn");
-      const profileBtn = document.getElementById("profileBtn");
+  questions.forEach((question) => {
+    question.addEventListener("click", () => {
+      const answer = question.nextElementSibling;
 
-      if (user) {
-  // user is logged in
-      loginBtn.style.display = "none";
-      profileBtn.style.display = "block";
-    } else {
-  // not logged in
-      loginBtn.style.display = "block";
-       profileBtn.style.display = "none";
-    }
-
-function goToProfile() {
-  window.location.href = "user-profile.php";
-}
-
-
-      //FAQs js
-            const questions = document.querySelectorAll(".faq-question");
-
-      questions.forEach((question) => {
-        question.addEventListener("click", () => {
-          const answer = question.nextElementSibling;
-          question.classList.toggle("active");
-          answer.classList.toggle("open");
-        });
+      // close other open faqs
+      document.querySelectorAll(".faq-answer").forEach((item) => {
+        if (item !== answer) {
+          item.classList.remove("open");
+        }
       });
-    </script>
+
+      document.querySelectorAll(".faq-question").forEach((item) => {
+        if (item !== question) {
+          item.classList.remove("active");
+        }
+      });
+
+      // toggle clicked faq
+      question.classList.toggle("active");
+      answer.classList.toggle("open");
+    });
+  });
+</script>
   </body>
 </html>

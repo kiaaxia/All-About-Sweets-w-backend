@@ -1,4 +1,4 @@
-<?php 
+<?php
 include "db.php";
 
 $message = "";
@@ -10,22 +10,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $phone = $_POST['phone'];
     $password = $_POST['password'];
 
-    // Check if email already exists
+    // Check email
     $checkQuery = "SELECT * FROM users WHERE email='$email'";
     $checkResult = mysqli_query($conn, $checkQuery);
 
     if (mysqli_num_rows($checkResult) > 0) {
-        $message = "Email already exists. Please use a different email.";
-    } 
 
-    elseif (strlen($password) < 8) {
+        $message = "Email already exists!";
+
+    } elseif (strlen($password) < 8) {
+
         $message = "Password must be at least 8 characters!";
-    }
 
-    else {
-        $insert = mysqli_query($conn, 
-        "INSERT INTO users (name, email, phone, password) 
-        VALUES ('$name', '$email', '$phone', '$password')");
+    } else {
+
+        $insert = mysqli_query($conn,
+        "INSERT INTO users(name, email, phone, password)
+        VALUES('$name', '$email', '$phone', '$password')");
 
         if ($insert) {
             $message = "Signup successful!";
