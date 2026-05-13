@@ -121,7 +121,7 @@
       window.location.href = "login.php";
     }
 
-    // 🔥 SAMPLE ORDERS (simulate)
+    // SAMPLE ORDERS (simulate)
     let orders = JSON.parse(localStorage.getItem("orders")) || [
       { name: "Khate", item: "Yema Cake", total: 130, status: "Pending" },
       { name: "Maki", item: "Dream Cake", total: 150, status: "Pending" }

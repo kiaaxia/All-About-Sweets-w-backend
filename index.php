@@ -1,4 +1,4 @@
-<?
+<?php
 session_start();
 if(isset($_SESSION['user_id '])){
   header("location: admin.php");
@@ -35,7 +35,13 @@ if(isset($_SESSION['user_id '])){
         <button class="order-btn">Order Now</button>
         </a>
         
-        <a href="login.php" class="login">Login</a>
+        <?php if (isset($_SESSION["user_id"])) { ?>
+  <a href="user-profile.php">
+    <img src="assets/user.png" class="profile-icon" alt="Profile">
+  </a>
+<?php } else { ?>
+  <a href="login.php" class="login">Login</a>
+<?php } ?>
       </nav>
     </header>
 
@@ -50,7 +56,7 @@ if(isset($_SESSION['user_id '])){
       </div>
 
       <div class="hero-img">
-        <img src="assets/cake.jpg" alt="Cake" />
+        <img src="assets/cakee.jpg" alt="Cake" />
       </div>
     </section>
     <br />
@@ -61,95 +67,83 @@ if(isset($_SESSION['user_id '])){
         <!-- ORIGINAL -->
         <div class="item">
           <div class="card">
-            <img src="assets/placeholder.jpg">
-            <h3>tinapay</h3>
+            <img src="assets/cookies.jpg">
+            <h3>cookies</h3>
           </div>
         </div>
         <div class="item">
           <div class="card">
-            <img src="assets/placeholder.jpg">
-            <h3>tinapay</h3>
+            <img src="assets/mango_graham.jpg">
+            <h3>Mango Graham</h3>
           </div>
         </div>
         <div class="item">
           <div class="card">
-            <img src="assets/placeholder.jpg">
-            <h3>tinapay</h3>
+            <img src="assets/banana-cake.jpg">
+            <h3>Banana Cake</h3>
           </div>
         </div>
         <div class="item">
           <div class="card">
-            <img src="assets/placeholder.jpg">
-            <h3>tinapay</h3>
-          </div>
-        </div>
-        <div class="item">
-          <div class="card">
-            <img src="assets/placeholder.jpg">
-            <h3>tinapay</h3>
+            <img src="assets/choco_crinkles.jpg">
+            <h3>Chocolate Crinkles</h3>
           </div>
         </div>
         <!-- DUPLICATE 1 -->
         <div class="item">
           <div class="card">
-            <img src="assets/placeholder.jpg">
-            <h3>tinapay</h3>
+            <img src="assets/macaroons.jpg">
+            <h3>Macaroons</h3>
           </div>
         </div>
         <div class="item">
           <div class="card">
-            <img src="assets/placeholder.jpg">
-            <h3>tinapay</h3>
+            <img src="assets/yema-cake.jpg">
+            <h3>Yema Cake</h3>
           </div>
         </div>
         <div class="item">
           <div class="card">
-            <img src="assets/placeholder.jpg">
-            <h3>tinapay</h3>
+            <img src="assets/cake-pink.jpg">
+            <h3>Cake</h3>
           </div>
         </div>
         <div class="item">
           <div class="card">
-            <img src="assets/placeholder.jpg">
-            <h3>tinapay</h3>
-          </div>
-        </div>
-        <div class="item">
-          <div class="card">
-            <img src="assets/placeholder.jpg">
-            <h3>tinapay</h3>
+            <img src="assets/cake_cars.jpg">
+            <h3>Cake</h3>
           </div>
         </div>
 
         <!-- DUPLICATE 2 (THIS FIXES THE GAP) -->
         <div class="item">
           <div class="card">
-            <img src="assets/placeholder.jpg">
-            <h3>tinapay</h3>
+            <img src="assets/cookies.jpg">
+            <h3>Cookies</h3>
           </div>
         </div>
         <div class="item">
           <div class="card">
-            <img src="assets/placeholder.jpg">
-            <h3>tinapay</h3>
+            <img src="assets/macaroons.jpg">
+            <h3>Macaroons</h3>
           </div>
         </div>
         <div class="item">
           <div class="card">
-            <img src="assets/placeholder.jpg">
-            <h3>tinapay</h3>
+            <img src="assets/yema-cake.jpg">
+            <h3>Yema Cake</h3>
           </div>
         </div>
         <div class="item">
           <div class="card">
-            <img src="assets/placeholder.jpg">
-            <h3>tinapay</h3>
+            <img src="assets/cake.jpg">
+            <h3>Cake</h3>
           </div>
         </div>
         <div class="item">
           <div class="card">
-            <img src="assets/placeholder.jpg">
-            <h3>tinapay</h3>
+            <img src="assets/choco_crinkles.jpg">
+            <h3>Chocolate Crinkles</h3>
           </div>
         </div>
       </div>
@@ -243,7 +237,7 @@ if(isset($_SESSION['user_id '])){
 
       <div class="faq-item">
         <div class="faq-question">What payment methods do you accept?</div>
-        <div class="faq-answer">We accept cash and GCash only.</div>
+        <div class="faq-answer">We accept cash payments only upon delivery or pickup.</div>
       </div>
 
       <div class="faq-item">
@@ -292,10 +286,10 @@ if(isset($_SESSION['user_id '])){
       <p>Handcrafted with love since 2016</p>
         <ul class="footer-links">
         <li><a href="#hero">Home</a></li>
-        <li><a href="flavors.html">Flavors</a></li>
-        <li><a href="index.html#story">Story</a></li>
-        <li><a href="blog.html">Blog</a></li>
-        <li><a href="blog.html#faq">FAQ</a></li>
+        <!-- <li><a href="flavors.php">Flavors</a></li> -->
+        <li><a href="index.php#story">Story</a></li>
+        <li><a href="blog.php">Blog</a></li>
+        <li><a href="blog.php#faq">FAQ</a></li>
       </ul>
       <small>© 2026 All About Sweets. All rights reserved.</small>
     </footer>
@@ -318,7 +312,7 @@ if(isset($_SESSION['user_id '])){
     }
 
 function goToProfile() {
-  window.location.href = "user-profile.html";
+  window.location.href = "user-profile.php";
 }
 
 
