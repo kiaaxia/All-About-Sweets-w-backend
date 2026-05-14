@@ -1,247 +1,202 @@
-<!doctype html>
+<?php
+session_start();
+
+if (($_SESSION['role'] ?? '') === 'admin') {
+    header("Location: admin-dashboard.php");
+    exit;
+}
+
+include "db.php";
+
+$message = "";
+$error = "";
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    if (!isset($_SESSION["user_id"])) {
+        $error = "Please log in before placing an order.";
+    } else {
+        $customerName = trim($_POST["customer_name"] ?? "");
+        $phone = trim($_POST["phone"] ?? "");
+        $address = trim($_POST["address"] ?? "");
+        $orderType = $_POST["order_type"] ?? "Pickup";
+        $preferredDate = $_POST["preferred_date"] ?? null;
+        $preferredTime = $_POST["preferred_time"] ?? "";
+        $cartJson = $_POST["cart_data"] ?? "[]";
+        $cart = json_decode($cartJson, true);
+
+        if ($customerName === "" || $phone === "") {
+            $error = "Please complete your name and phone number.";
+        } elseif ($orderType === "Delivery" && $address === "") {
+            $error = "Please enter your delivery address.";
+        } elseif (!is_array($cart) || count($cart) === 0) {
+            $error = "Your cart is empty.";
+        } else {
+            $total = 0;
+            foreach ($cart as $item) {
+                $total += ((float)$item["price"]) * ((int)$item["quantity"]);
+            }
+
+            mysqli_begin_transaction($conn);
+            try {
+                $stmt = mysqli_prepare($conn, "INSERT INTO orders (user_id, customer_name, phone, address, order_type, preferred_date, preferred_time, payment_method, total_amount, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'Cash on Delivery', ?, 'Pending')");
+                mysqli_stmt_bind_param($stmt, "issssssd", $_SESSION["user_id"], $customerName, $phone, $address, $orderType, $preferredDate, $preferredTime, $total);
+                mysqli_stmt_execute($stmt);
+                $orderId = mysqli_insert_id($conn);
+
+                $itemStmt = mysqli_prepare($conn, "INSERT INTO order_items (order_id, product_id, product_name, quantity, price, subtotal) VALUES (?, ?, ?, ?, ?, ?)");
+                foreach ($cart as $item) {
+                    $productId = (int)$item["id"];
+                    $productName = $item["name"];
+                    $qty = (int)$item["quantity"];
+                    $price = (float)$item["price"];
+                    $subtotal = $qty * $price;
+                    mysqli_stmt_bind_param($itemStmt, "iisidd", $orderId, $productId, $productName, $qty, $price, $subtotal);
+                    mysqli_stmt_execute($itemStmt);
+                }
+
+                mysqli_commit($conn);
+                $message = "Order placed successfully. Your order is now pending.";
+            } catch (Exception $e) {
+                mysqli_rollback($conn);
+                $error = "Order failed. Please try again.";
+            }
+        }
+    }
+}
+
+$tomorrow = date('Y-m-d', strtotime('+1 day'));
+$timeOptions = ["08:00 AM", "09:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "01:00 PM", "02:00 PM", "03:00 PM", "04:00 PM", "05:00 PM"];
+?>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Checkout</title>
-  <link rel="stylesheet" href="checkout.css" />
-  <link rel="shortcut icon" href="assets/AASlogo.png" type="image/x-icon">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout | All About Sweets</title>
+    <link rel="stylesheet" href="checkout.css">
 </head>
-
 <body>
-  <h1>Place Your Order</h1>
+<?php include "navbar.php"; ?>
+<main class="checkout-container">
+    <section class="delivery-info">
+        <h1>Checkout</h1>
+        <?php if ($message): ?><div class="success" id="orderSuccess"><?= htmlspecialchars($message); ?></div><?php endif; ?>
+        <?php if ($error): ?><div class="error-box"><?= htmlspecialchars($error); ?></div><?php endif; ?>
 
-  <div id="empty-view" class="empty">
-    <h2>Your Cart is Empty</h2>
-    <p>Add some items to your cart before placing an order.</p>
-    <button onclick="goBack()">Start Shopping</button>
-  </div>
+        <?php if (!isset($_SESSION['user_id'])): ?>
+            <div class="error-box">You need to <a href="login.php">login</a> before placing an order.</div>
+        <?php endif; ?>
 
-  <div id="checkout-view" class="checkout-container" style="display: none">
-    <div class="delivery-info">
-      <h2>Order Information</h2>
+        <form method="POST" id="checkoutForm">
+            <input type="hidden" name="cart_data" id="cartData">
 
-      <label>Full Name</label>
-      <input type="text" id="fullname" placeholder="Enter your full name" />
+            <label>Full Name</label>
+            <input type="text" name="customer_name" value="<?= htmlspecialchars($_SESSION['name'] ?? ''); ?>" required>
 
-      <label>Contact Number</label>
-      <input type="text" id="contact" placeholder="09XX XXX XXXX" minlength="11" maxlength="11" />
+            <label>Phone Number</label>
+            <input type="text" name="phone" required>
 
-      <label>Order Type</label>
-      <div class="radio-group">
-        <label>
-          <input type="radio" name="type" value="pickup" onclick="selectType('pickup')" />
-          Pickup
-        </label>
+            <label>Order Type</label>
+            <div class="radio-group">
+                <label><input type="radio" name="order_type" value="Pickup" checked> Pickup</label>
+                <label><input type="radio" name="order_type" value="Delivery"> Delivery</label>
+            </div>
 
-        <label>
-          <input type="radio" name="type" value="delivery" onclick="selectType('delivery')" />
-          Delivery
-        </label>
-      </div>
+            <label>Delivery Address</label>
+            <textarea name="address" placeholder="Required for delivery only"></textarea>
 
-      <div id="pickup-options" style="display: none">
-        <label>Pickup Location</label>
+            <label>Preferred Date</label>
+            <input type="date" name="preferred_date" min="<?= $tomorrow; ?>" value="<?= $tomorrow; ?>" required>
 
-        <div class="radio-group">
-          <label>
-            <input type="radio" name="pickup" value="Owner Address" />
-            Owner Address
-          </label>
+            <label>Preferred Time</label>
+            <select name="preferred_time" required>
+                <?php foreach ($timeOptions as $time): ?>
+                    <option value="<?= $time; ?>"><?= $time; ?></option>
+                <?php endforeach; ?>
+            </select>
 
-          <label>
-            <input type="radio" name="pickup" value="Trinoma / SM North" />
-            Trinoma / SM North
-          </label>
-        </div>
-      </div>
+            <div class="payment-box">
+                <strong>Payment Method: Cash on Delivery / Cash on Pickup</strong>
+                <p>Payment will be collected once your order is delivered or picked up.</p>
+            </div>
 
-      <div id="address-field" style="display: none">
-        <label>Delivery Address</label>
-        <input type="text" id="address" placeholder="Enter your delivery address" />
-      </div>
+            <button class="place-order-btn" type="submit" <?= !isset($_SESSION['user_id']) ? 'disabled' : ''; ?>>Place Order</button>
+        </form>
+    </section>
 
-      <label>Preferred Pickup / Delivery Date</label>
-      <input type="date" id="date" required />
-      <label>Preferred Pickup / Delivery Time</label>
-      <select id="time">
-        <option value="">Select preferred time</option>
-        <option value="08:00 AM">08:00 AM</option>
-        <option value="09:00 AM">09:00 AM</option>
-        <option value="10:00 AM">10:00 AM</option>
-        <option value="11:00 AM">11:00 AM</option>
-        <option value="12:00 PM">12:00 PM</option>
-        <option value="01:00 PM">01:00 PM</option>
-        <option value="02:00 PM">02:00 PM</option>
-        <option value="03:00 PM">03:00 PM</option>
-        <option value="04:00 PM">04:00 PM</option>
-        <option value="05:00 PM">05:00 PM</option>
-      </select>
+    <aside class="order-summary">
+        <h2>Your Cart</h2>
+        <div id="cartItems"></div>
+        <div class="total">Total: ₱<span id="cartTotal">0.00</span></div>
+        <a class="add-more" href="index.php">+ Add more items</a>
+    </aside>
+</main>
+<script src="cart.js"></script>
+<script>
+const cartItems = document.getElementById('cartItems');
+const cartTotal = document.getElementById('cartTotal');
+const cartData = document.getElementById('cartData');
+const form = document.getElementById('checkoutForm');
 
+function renderCheckoutCart() {
+    let cart = getCart();
+    let total = 0;
+    cartItems.innerHTML = '';
 
-      <p class="note">
-        Orders are only accepted from 8:00 AM to 5:00 PM. Please allow at least 24 hours for preparation.
-      </p>
-
-      <label>Payment Method</label>
-      <div class="payment-box">
-        <strong>Cash on Delivery / Cash on Pickup</strong>
-        <p>Payment will be collected when your order is delivered or picked up.</p>
-      </div>
-
-      <button class="place-order-btn" onclick="placeOrder()">Place Order</button>
-    </div>
-
-    <div class="order-summary">
-      <h2 class="order-sum-text">Order Summary</h2>
-
-      <div id="summary-items"></div>
-      <div id="summary-total"></div>
-
-      <p class="note">Note: You will receive confirmation after placing your order.</p>
-    </div>
-  </div>
-
-  <script>
-    let names = [];
-    let prices = [];
-    let quantities = [];
-    let images = [];
-
-    function getCartFromURL() {
-      let url = window.location.href;
-
-      if (url.indexOf("?data=") == -1) {
+    if (cart.length === 0) {
+        cartItems.innerHTML = '<div class="empty">Your cart is empty.</div>';
+        cartTotal.textContent = '0.00';
+        cartData.value = '[]';
         return;
-      }
-
-      let dataString = decodeURIComponent(url.split("?data=")[1]);
-      let items = dataString.split("|");
-
-      for (let i = 0; i < items.length; i++) {
-        let parts = items[i].split(",");
-
-        names.push(parts[0]);
-        prices.push(parseInt(parts[1]));
-        quantities.push(parseInt(parts[2]));
-        images.push(parts[3]);
-      }
     }
 
-    function checkCart() {
-      if (names.length == 0) {
-        document.getElementById("empty-view").style.display = "block";
-        document.getElementById("checkout-view").style.display = "none";
-      } else {
-        document.getElementById("empty-view").style.display = "none";
-        document.getElementById("checkout-view").style.display = "flex";
-        displaySummary();
-      }
+    cart.forEach((item, index) => {
+        const subtotal = Number(item.price) * Number(item.quantity);
+        total += subtotal;
+        cartItems.innerHTML += `
+            <div class="summary-item">
+                <img src="${item.image}" onerror="this.src='assets/default-product.jpg'" alt="${item.name}">
+                <div class="summary-details">
+                    <strong>${item.name}</strong>
+                    <span>₱${Number(item.price).toFixed(2)}</span>
+                    <div class="qty-controls">
+                        <button type="button" onclick="changeQty(${index}, -1)">−</button>
+                        <span>${item.quantity}</span>
+                        <button type="button" onclick="changeQty(${index}, 1)">+</button>
+                        <button type="button" class="remove" onclick="removeItem(${index})">Remove</button>
+                    </div>
+                </div>
+            </div>`;
+    });
+    cartTotal.textContent = total.toFixed(2);
+    cartData.value = JSON.stringify(cart);
+}
+
+function changeQty(index, amount) {
+    let cart = getCart();
+    cart[index].quantity += amount;
+    if (cart[index].quantity <= 0) cart.splice(index, 1);
+    saveCart(cart);
+    renderCheckoutCart();
+}
+function removeItem(index) {
+    let cart = getCart();
+    cart.splice(index, 1);
+    saveCart(cart);
+    renderCheckoutCart();
+}
+form.addEventListener('submit', function(e) {
+    cartData.value = JSON.stringify(getCart());
+    if (getCart().length === 0) {
+        e.preventDefault();
+        alert('Your cart is empty.');
     }
-
-    function displaySummary() {
-      let output = "";
-      let total = 0;
-
-      for (let i = 0; i < names.length; i++) {
-        let itemTotal = prices[i] * quantities[i];
-        total += itemTotal;
-
-        output +=
-          "<div class='summary-item'>" +
-          "<img src='" + images[i] + "'>" +
-          "<div>" +
-          "<b>" + names[i] + "</b><br>" +
-          "Qty: " + quantities[i] +
-          "</div>" +
-          "<div style='margin-left:auto;'>₱" + itemTotal + "</div>" +
-          "</div>";
-      }
-
-      document.getElementById("summary-items").innerHTML = output;
-
-      document.getElementById("summary-total").innerHTML =
-        "Subtotal: ₱" + total +
-        "<br>Delivery Fee: To be confirmed" +
-        "<br><div class='total'>Total: ₱" + total + "</div>";
-    }
-
-    function selectType(type) {
-      const pickupOptions = document.getElementById("pickup-options");
-      const addressField = document.getElementById("address-field");
-
-      if (type == "pickup") {
-        pickupOptions.style.display = "block";
-        addressField.style.display = "none";
-      } else {
-        pickupOptions.style.display = "none";
-        addressField.style.display = "block";
-      }
-    }
-
-    function placeOrder() {
-      let fullname = document.getElementById("fullname").value.trim();
-      let contact = document.getElementById("contact").value.trim();
-      let time = document.getElementById("time").value;
-
-      let selectedType = document.querySelector("input[name='type']:checked");
-      let selectedPickup = document.querySelector("input[name='pickup']:checked");
-      let address = document.getElementById("address").value.trim();
-
-      if (fullname == "" || contact == "" || time == "") {
-        alert("Please fill out all required fields!");
-        return;
-      }
-
-      if (contact.length !== 11 || isNaN(contact)) {
-        alert("Please enter a valid 11-digit contact number.");
-        return;
-      }
-
-      if (!selectedType) {
-        alert("Please select pickup or delivery.");
-        return;
-      }
-
-      if (selectedType.value === "pickup" && !selectedPickup) {
-        alert("Please select a pickup location.");
-        return;
-      }
-
-      if (selectedType.value === "delivery" && address == "") {
-        alert("Please enter your delivery address.");
-        return;
-      }
-
-      if (time < "08:00" || time > "17:00") {
-        alert("Please choose a time between 8:00 AM and 5:00 PM only.");
-        return;
-      }
-
-      alert("Order placed successfully! Payment method: Cash only.");
-    }
-
-    function goBack() {
-      window.location.href = "ordernow.php";
-    }
-
-    getCartFromURL();
-    checkCart();
-
-
-      const dateInput = document.getElementById("date");
-
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-
-      const yyyy = tomorrow.getFullYear();
-      const mm = String(tomorrow.getMonth() + 1).padStart(2, "0");
-      const dd = String(tomorrow.getDate()).padStart(2, "0");
-
-      const tomorrowDate = `${yyyy}-${mm}-${dd}`;
-
-      dateInput.min = tomorrowDate;
-      dateInput.max = tomorrowDate;
-  </script>
+});
+<?php if ($message): ?>
+localStorage.removeItem('aas_cart');
+updateCartCount();
+<?php endif; ?>
+renderCheckoutCart();
+</script>
 </body>
 </html>

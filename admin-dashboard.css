@@ -1,0 +1,153 @@
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  background: #f5eadb;
+  color: #4b2b11;
+}
+.admin-layout {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  min-height: 100vh;
+}
+.sidebar {
+  background: #7a3e00;
+  color: #fff;
+  padding: 24px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+.sidebar h2 {
+  margin-top: 0;
+}
+.sidebar a {
+  display: block;
+  color: #fff;
+  text-decoration: none;
+  padding: 12px;
+  border-radius: 10px;
+  margin: 6px 0;
+}
+.sidebar a:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+.admin-main {
+  padding: 28px;
+}
+.admin-header,
+.admin-section,
+.stat-card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 8px 22px rgba(75, 43, 17, 0.08);
+  margin-bottom: 20px;
+}
+.cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.stat-card h3 {
+  margin: 0 0 8px;
+  color: #7a3e00;
+}
+.stat-card strong {
+  font-size: 28px;
+}
+.notice {
+  background: #e7f8e7;
+  border: 1px solid #9ad19a;
+  color: #1f6b1f;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 18px;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.form-grid textarea {
+  grid-column: span 2;
+}
+input,
+select,
+textarea,
+button {
+  font: inherit;
+}
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #d8b58d;
+  border-radius: 10px;
+}
+textarea {
+  min-height: 70px;
+}
+button {
+  background: #8b4513;
+  color: #fff;
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  margin: 3px 0;
+}
+button:hover {
+  background: #6f350c;
+}
+.table-wrap {
+  overflow-x: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 900px;
+}
+th,
+td {
+  border-bottom: 1px solid #ecd8c4;
+  padding: 10px;
+  text-align: left;
+  vertical-align: top;
+}
+th {
+  background: #fff5e9;
+  color: #7a3e00;
+}
+small {
+  color: #7b6757;
+}
+@media (max-width: 900px) {
+  .admin-layout {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    height: auto;
+    position: static;
+  }
+  .cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .form-grid textarea {
+    grid-column: auto;
+  }
+  .admin-main {
+    padding: 16px;
+  }
+}
+@media (max-width: 520px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,195 +1,118 @@
 <?php
 session_start();
-
-if (!isset($_SESSION["user_id"])) {
-    header("Location: login.php");
+include "db.php";
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
     exit;
 }
+
+$user = null;
+$stmt = mysqli_prepare($conn, "SELECT * FROM users WHERE id=? LIMIT 1");
+mysqli_stmt_bind_param($stmt, "i", $_SESSION['user_id']);
+mysqli_stmt_execute($stmt);
+$res = mysqli_stmt_get_result($stmt);
+if ($res)
+    $user = mysqli_fetch_assoc($res);
+
+$orders = [];
+$stmt = mysqli_prepare($conn, "SELECT * FROM orders WHERE user_id=? ORDER BY created_at DESC");
+mysqli_stmt_bind_param($stmt, "i", $_SESSION['user_id']);
+mysqli_stmt_execute($stmt);
+$res = mysqli_stmt_get_result($stmt);
+if ($res)
+    while ($row = mysqli_fetch_assoc($res))
+        $orders[] = $row;
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Profile</title>
-  <link rel="stylesheet" href="user-edit-profile.css">
-  <link rel="shortcut icon" href="assets/AASlogo.png" type="image/x-icon">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 
-<header class="navbar">
-      <div class="logo">
-        <span>All About Sweets</span>
-      </div>
-      <!-- <input type="checkbox" id="menu-toggle" /> -->
-
-      <label for="menu-toggle" class="hamburger">
-        <span></span>
-        <span></span>
-        <span></span>
-      </label>
-
-      <nav class="nav-menu">
-        <a href="index.php">Home</a>
-        <a href="index.php#story">Story</a>
-        <a href="blog.php">Blog</a>
-        <a href="index.php#faq">FAQs</a>
-        <a href="ordernow.php"> 
-        <button class="order-btn">Order Now</button>
-        </a>
-        
-        <a href="login.php" id="loginBtn" class="login">Login</a>
-
-      <img 
-        src="assets/user.png"
-        id="profileBtn"
-        class="profile-icon"
-        onclick="goToProfile()"
-        style="display: none;">
-      </nav>
-    </header>
-
 <body>
+    <?php include "navbar.php"; ?>
+    <main class="page-wrap">
+        <section class="content-card narrow">
+            <h1>My Profile</h1>
+            <img class="profile-large" src="assets/user.png" alt="Profile">
+            <p><strong>Name:</strong> <?= htmlspecialchars($user['name'] ?? ''); ?></p>
+            <p><strong>Email:</strong> <?= htmlspecialchars($user['email'] ?? ''); ?></p>
+            <p><strong>Phone:</strong> <?= htmlspecialchars($user['phone'] ?? ''); ?></p>
+            <a class="btn-primary inline" href="edit-profile.php">Edit Profile</a>
+            <a class="btn-secondary inline" href="logout.php">Logout</a>
+        </section>
+        <section class="content-card">
+            <h2>My Orders</h2>
+            <?php if (empty($orders)): ?>
+                <p>No orders yet.</p><?php endif; ?>
+            <?php foreach ($orders as $o): ?>
+                <div class="order-card"><strong>Order #<?= (int) $o['id']; ?></strong>
+                    <p><?= htmlspecialchars($o['order_type']); ?> • ₱<?= number_format((float) $o['total_amount'], 2); ?> •
+                        <?= htmlspecialchars($o['status']); ?></p><small><?= htmlspecialchars($o['created_at']); ?></small>
+                </div><?php endforeach; ?>
+        </section>
+    </main>
+    <script src="cart.js"></script>
 
-<div class="wrapper">
 
-  <!-- LEFT: PROFILE -->
-  <div class="profile-card">
-    <h2>My Profile</h2>
+    <footer class="footer">
+    <div class="footer-content">
 
-    <img id="profilePic" class="profile-pic" src="https://via.placeholder.com/100">
+        <div class="footer-brand">
+            <h2>All About Sweets</h2>
+            <p>
+                Fresh pastries, cakes, cookies, and customized sweets
+                made with love for every celebration.
+            </p>
+        </div>
 
-    <p><b>Name:</b> <span id="name"></span></p>
-    <p><b>Email:</b> <span id="email"></span></p>
-    <p><b>Contact no.:</b> <span id="phone"></span></p>
+        <div class="footer-links">
+            <h3>Quick Links</h3>
+            <a href="index.php">Home</a>
+            <a href="customized-cake.php">Customized Cake</a>
+            <a href="story.php">About Us</a>
+            <a href="reviews.php">Reviews</a>
+            <a href="faqs.php">FAQs</a>
+        </div>
 
-    <button onclick="editProfile()">Edit Profile</button>
-    <button onclick="logout()">Logout</button>
-  </div>
+        <div class="footer-contact">
+            <h3>Contact</h3>
 
-  <!-- RIGHT: ORDERS + ADDRESS -->
-  <div class="right-card">
+            <p>
+                Email:
+                <a href="mailto:allaboutsweetsadmin@gmail.com">
+                    allaboutsweetsadmin@gmail.com
+                </a>
+            </p>
 
-    <h2>My Orders</h2>
-    <div id="orderList"></div>
+            <p>
+                Facebook:
+                <a href="https://facebook.com/allaboutsweets" target="_blank">
+                    All About Sweets
+                </a>
+            </p>
 
-    <h3>Address</h3>
+            <p>
+                Contact Number:
+                <a href="tel:+639123456789">
+                    +63 912 345 6789
+                </a>
+            </p>
 
-    <button onclick="toggleAddressForm()">+ Add Address</button>
+            <p>Valenzuela City, Philippines</p>
+            <p>Open Daily • 8:00 AM - 5:00 PM</p>
+        </div>
 
-    <!-- 🔥 HIDDEN FORM -->
-    <div id="addressForm" class="address-form hidden">
-      <h4>New Address</h4>
-
-      <input type="text" id="addrName" placeholder="Full Name">
-      <input type="text" id="addrPhone" placeholder="Phone Number">
-      <input type="text" id="addrCity" placeholder="City, Barangay">
-      <input type="text" id="addrPostal" placeholder="Postal Code">
-      <input type="text" id="addrStreet" placeholder="Street Name, Building">
-
-      <button onclick="saveAddress()">Save Address</button>
     </div>
 
-    <!-- ADDRESS LIST -->
-    <div id="addressList"></div>
-
-  </div>
-
-</div>
-
-<script>
-const user = JSON.parse(localStorage.getItem("user"));
-
-if (!user) window.location.href = "login.php";
-
-// PROFILE
-document.getElementById("name").textContent = user.name || "N/A";
-document.getElementById("email").textContent = user.email;
-document.getElementById("phone").textContent = user.phone || "N/A";
-
-if (user.profilePic) {
-  document.getElementById("profilePic").src = user.profilePic;
-}
-
-// ================= ORDERS =================
-let orders = JSON.parse(localStorage.getItem("orders")) || [];
-
-let orderOutput = "";
-orders.forEach(order => {
-  if (order.name === user.email) {
-    orderOutput += `
-      <div class="card">
-        <p><b>${order.item}</b></p>
-        <p>₱${order.total}</p>
-        <p>${order.status}</p>
-      </div>
-    `;
-  }
-});
-
-document.getElementById("orderList").innerHTML = orderOutput || "No orders yet.";
-
-// ================= ADDRESS =================
-let addresses = JSON.parse(localStorage.getItem("addresses")) || [];
-
-function toggleAddressForm() {
-  document.getElementById("addressForm").classList.toggle("hidden");
-}
-
-function saveAddress() {
-  const newAddr = {
-    email: user.email,
-    name: addrName.value,
-    phone: addrPhone.value,
-    city: addrCity.value,
-    postal: addrPostal.value,
-    street: addrStreet.value
-  };
-
-  addresses.push(newAddr);
-  localStorage.setItem("addresses", JSON.stringify(addresses));
-
-  renderAddresses();
-  toggleAddressForm();
-}
-
-function renderAddresses() {
-  let output = "";
-
-  addresses.forEach((addr, index) => {
-    if (addr.email === user.email) {
-      output += `
-        <div class="card">
-          <p><b>${addr.name}</b></p>
-          <p>${addr.phone}</p>
-          <p>${addr.street}, ${addr.city}</p>
-          <p>${addr.postal}</p>
-
-          <button onclick="deleteAddress(${index})">Delete</button>
-        </div>
-      `;
-    }
-  });
-
-  document.getElementById("addressList").innerHTML = output || "No address yet.";
-}
-
-function deleteAddress(index) {
-  addresses.splice(index, 1);
-  localStorage.setItem("addresses", JSON.stringify(addresses));
-  renderAddresses();
-}
-
-renderAddresses();
-
-function editProfile() {
-  window.location.href = "edit-profile.php";
-}
-
-function logout() {
-  localStorage.removeItem("user");
-  window.location.href = "login.php";
-}
-</script>
-
+    <div class="footer-bottom">
+        <p>© 2026 All About Sweets. All Rights Reserved.</p>
+    </div>
+</footer>
 </body>
+
 </html>

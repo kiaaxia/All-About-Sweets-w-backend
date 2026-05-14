@@ -1,66 +1,21 @@
 <?php
 session_start();
+include "db.php";
+if (!isset($_SESSION['user_id'])) { header('Location: login.php'); exit; }
+$message = '';
+if ($_SERVER['REQUEST_METHOD']==='POST') {
+    $name = trim($_POST['name']);
+    $phone = trim($_POST['phone']);
+    $stmt = mysqli_prepare($conn, "UPDATE users SET name=?, phone=? WHERE id=?");
+    mysqli_stmt_bind_param($stmt, "ssi", $name, $phone, $_SESSION['user_id']);
+    if (mysqli_stmt_execute($stmt)) { $_SESSION['name']=$name; $message='Profile updated.'; }
+}
+$stmt = mysqli_prepare($conn, "SELECT * FROM users WHERE id=? LIMIT 1");
+mysqli_stmt_bind_param($stmt, "i", $_SESSION['user_id']);
+mysqli_stmt_execute($stmt);
+$user = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
 ?>
-
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Edit Profile</title>
-  <link rel="stylesheet" href="user-edit-profile.css">
-  <link rel="shortcut icon" href="assets/AASlogo.png" type="image/x-icon">
-</head>
-
-<body>
-
-<div class="box">
-  <h2>Edit Profile</h2>
-
-  <img id="preview" class="profile-pic" src="https://via.placeholder.com/100">
-
-  <input type="file" id="upload">
-
-  <input type="text" id="name" placeholder="Name">
-  <input type="text" id="phone" placeholder="Phone">
-  <input type="text" id="address" placeholder="Address">
-
-  <button onclick="saveProfile()">Save</button>
-</div>
-
-<script>
-  let user = JSON.parse(localStorage.getItem("user"));
-
-  document.getElementById("name").value = user.name || "";
-  document.getElementById("phone").value = user.phone || "";
-  document.getElementById("address").value = user.address || "";
-
-  if (user.profilePic) {
-    document.getElementById("preview").src = user.profilePic;
-  }
-
-  // Preview image
-  document.getElementById("upload").addEventListener("change", function() {
-    const file = this.files[0];
-    const reader = new FileReader();
-
-    reader.onload = function(e) {
-      document.getElementById("preview").src = e.target.result;
-      user.profilePic = e.target.result;
-    };
-
-    if (file) reader.readAsDataURL(file);
-  });
-
-  function saveProfile() {
-    user.name = document.getElementById("name").value;
-    user.phone = document.getElementById("phone").value;
-    user.address = document.getElementById("address").value;
-
-    localStorage.setItem("user", JSON.stringify(user));
-
-    alert("Profile updated!");
-    window.location.href = "user-profile.php";
-  }
-</script>
-
-</body>
-</html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Edit Profile</title><link rel="stylesheet" href="style.css"></head><body><?php include "navbar.php"; ?>
+<main class="page-wrap"><section class="content-card narrow"><h1>Edit Profile</h1><?php if($message):?><div class="success"><?=htmlspecialchars($message)?></div><?php endif;?>
+<form method="POST" class="form-card"><label>Name</label><input name="name" value="<?=htmlspecialchars($user['name'])?>" required><label>Phone</label><input name="phone" value="<?=htmlspecialchars($user['phone'])?>" required><button class="btn-primary">Save Changes</button></form>
+</section></main><script src="cart.js"></script></body></html>

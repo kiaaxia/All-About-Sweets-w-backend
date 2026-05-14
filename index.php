@@ -1,295 +1,357 @@
 <?php
 session_start();
-if(isset($_SESSION['user_id '])){
-  header("location: admin.php");
-  exit;
+include "db.php";
+
+function cleanText($value) {
+    return htmlspecialchars($value ?? "", ENT_QUOTES, "UTF-8");
+}
+
+$products = [];
+
+$query = "SELECT * FROM products ORDER BY category ASC, id DESC";
+$result = mysqli_query($conn, $query);
+
+if ($result) {
+    while ($row = mysqli_fetch_assoc($result)) {
+        $archived = isset($row["is_archived"]) ? (int)$row["is_archived"] : 0;
+
+        if ($archived === 0) {
+            $products[] = $row;
+        }
+    }
+}
+
+/* Fallback products para hindi blank/error habang testing */
+if (empty($products)) {
+    $products = [
+        [
+            "id" => 1,
+            "name" => "Chocolate Cake",
+            "product_name" => "Chocolate Cake",
+            "category" => "Cakes",
+            "description" => "Rich chocolate cake perfect for celebrations.",
+            "price" => 850,
+            "image" => "assets/cake.jpg",
+            "availability" => "Available"
+        ],
+        [
+            "id" => 2,
+            "name" => "Red Velvet Cake",
+            "product_name" => "Red Velvet Cake",
+            "category" => "Cakes",
+            "description" => "Soft red velvet cake with cream cheese frosting.",
+            "price" => 950,
+            "image" => "assets/redvelvet.jpg",
+            "availability" => "Available"
+        ],
+        [
+            "id" => 3,
+            "name" => "Banana Bread",
+            "product_name" => "Banana Bread",
+            "category" => "Bread",
+            "description" => "Moist banana bread baked fresh daily.",
+            "price" => 180,
+            "image" => "assets/banana-bread.jpg",
+            "availability" => "Available"
+        ],
+        [
+            "id" => 4,
+            "name" => "Chocolate Chip Cookies",
+            "product_name" => "Chocolate Chip Cookies",
+            "category" => "Cookies",
+            "description" => "Freshly baked cookies with chocolate chips.",
+            "price" => 150,
+            "image" => "assets/cookies.jpg",
+            "availability" => "Available"
+        ]
+    ];
+}
+
+$categories = ["All"];
+
+foreach ($products as $product) {
+    $category = $product["category"] ?? "Others";
+
+    if (!in_array($category, $categories)) {
+        $categories[] = $category;
+    }
 }
 ?>
 
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>All About Sweets</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <header class="navbar">
-      <div class="logo">
-        <span>All About Sweets</span>
-      </div>
-      <input type="checkbox" id="menu-toggle" />
+<head>
+    <meta charset="UTF-8">
+    <title>All About Sweets | Home</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-      <label for="menu-toggle" class="hamburger">
-        <span></span>
-        <span></span>
-        <span></span>
-      </label>
+    <link rel="stylesheet" href="style.css">
+</head>
 
-      <nav class="nav-menu">
-        <a href="#" class="active">Home</a>
-        <a href="flavors.php">Flavors</a>
-        <a href="#story">Story</a>
-        <a href="blog.php">Blog</a>
-        <a href="ordernow.php"> 
-        <button class="order-btn">Order Now</button>
+<body>
+
+<?php include "navbar.php"; ?>
+
+<main class="main-wrap">
+
+    <section class="shop-hero">
+        <div>
+            <p class="eyebrow">Freshly Baked Sweets</p>
+            <h1>Browse, choose, and order your favorites.</h1>
+            <p>
+                Products are already shown here for easier ordering. Use the search bar
+                or categories to find items faster.
+            </p>
+        </div>
+
+        <a href="customized-cake.php" class="hero-card">
+            <strong>Customized Cake</strong>
+            <span>Upload your reference picture and send your custom cake request.</span>
         </a>
-        
-        <?php if (isset($_SESSION["user_id"])) { ?>
-  <a href="user-profile.php">
-    <img src="assets/user.png" class="profile-icon" alt="Profile">
-  </a>
-<?php } else { ?>
-  <a href="login.php" class="login">Login</a>
-<?php } ?>
-      </nav>
-    </header>
-
-    <section id="hero" class="hero">
-      <div class="hero-text">
-        <h1>Handcrafted<br />Sweet Delights</h1>
-        <p>
-          From customized celebration cakes to traditional Filipino pastries,
-          every treat is made with love and the finest ingredients.
-        </p>
-        <button class="ct-btn">Order Your Favorites</button>
-      </div>
-
-      <div class="hero-img">
-        <img src="assets/cakee.jpg" alt="Cake" />
-      </div>
-    </section>
-    <br />
-    <br />
-    <br />
-    <section class="loop-section">
-      <div class="loop-track">
-        <!-- ORIGINAL -->
-        <div class="item">
-          <div class="card">
-            <img src="assets/cookies.jpg">
-            <h3>cookies</h3>
-          </div>
-        </div>
-        <div class="item">
-          <div class="card">
-            <img src="assets/mango_graham.jpg">
-            <h3>Mango Graham</h3>
-          </div>
-        </div>
-        <div class="item">
-          <div class="card">
-            <img src="assets/banana-cake.jpg">
-            <h3>Banana Cake</h3>
-          </div>
-        </div>
-        <div class="item">
-          <div class="card">
-            <img src="assets/choco_crinkles.jpg">
-            <h3>Chocolate Crinkles</h3>
-          </div>
-        </div>
-        <!-- DUPLICATE 1 -->
-        <div class="item">
-          <div class="card">
-            <img src="assets/macaroons.jpg">
-            <h3>Macaroons</h3>
-          </div>
-        </div>
-        <div class="item">
-          <div class="card">
-            <img src="assets/yema-cake.jpg">
-            <h3>Yema Cake</h3>
-          </div>
-        </div>
-        <div class="item">
-          <div class="card">
-            <img src="assets/cake_2.jpg">
-            <h3>Cake</h3>
-          </div>
-        </div>
-        <div class="item">
-          <div class="card">
-            <img src="assets/cake_cars.jpg">
-            <h3>Cake</h3>
-          </div>
-        </div>
-
-        <!-- DUPLICATE 2 (THIS FIXES THE GAP) -->
-        <div class="item">
-          <div class="card">
-            <img src="assets/cookies.jpg">
-            <h3>Cookies</h3>
-          </div>
-        </div>
-        <div class="item">
-          <div class="card">
-            <img src="assets/macaroons.jpg">
-            <h3>Macaroons</h3>
-          </div>
-        </div>
-        <div class="item">
-          <div class="card">
-            <img src="assets/yema-cake.jpg">
-            <h3>Yema Cake</h3>
-          </div>
-        </div>
-        <div class="item">
-          <div class="card">
-            <img src="assets/cake.jpg">
-            <h3>Cake</h3>
-          </div>
-        </div>
-        <div class="item">
-          <div class="card">
-            <img src="assets/choco_crinkles.jpg">
-            <h3>Chocolate Crinkles</h3>
-          </div>
-        </div>
-      </div>
-    </section>
-    <section id="story" class="story">
-      <div class="story-container">
-        <div class="story-text">
-          <h1>Our Sweet Story</h1>
-          <p>
-            It all started back in 2016 with a simple passion for creating
-            beautiful customized cakes that would make every celebration extra
-            special. What began as a small home-based operation quickly grew as
-            word spread about our attention to detail and commitment to quality.
-          </p>
-
-          <p>
-            As our clientele expanded, we listened to what our customers wanted.
-            They loved our cakes, but they also craved other sweet treats.
-            That's when we decided to expand our offerings to include
-            traditional Filipino pastries like banana cake, yema cake, and leche
-            flan, alongside classic favorites like cookies and chocolate
-            crinkles.
-          </p>
-
-          <p>
-            Today, All About Sweets is known throughout the community for our
-            handcrafted approach, premium ingredients, and that homemade taste
-            that reminds you of grandma's kitchen. Every order is made with the
-            same love and care we put into that very first cake back in 2016.
-          </p>
-          <p style="color: rgb(153, 115, 8)">
-            <b
-              >From our kitchen to your celebrations, we're honored to be part
-              of your sweetest moments.
-            </b>
-          </p>
-        </div>
-
-        <!-- <div class="story-image">
-          <img src="images/story.jpg" />
-        </div> -->
-      </div>
     </section>
 
-<section id="faq" class="faq-section">
-      <h2>Frequently Asked Questions</h2>
-      <p class="subtitle">Everything you need to know</p>
+    <section class="shop-tools">
+    <div class="search-cart-row">
+        <input type="text" id="productSearch" placeholder="Search sweets, cakes, cookies, desserts...">
 
-      <div class="faq-item">
-        <div class="faq-question">
-          How far in advance should I order a customized cake?
-        </div>
-        <div class="faq-answer">
-          We recommend placing your order at least 1–2 weeks in advance to
-          ensure availability and enough time for customization.
-        </div>
-      </div>
+        <a href="checkout.php" class="top-icon-btn cart-top-btn" title="Cart">
+            <span>□</span>
+            <small id="cartCount">0</small>
+        </a>
 
-      <div class="faq-item">
-        <div class="faq-question">Do you offer delivery?</div>
-        <div class="faq-answer">
-          Yes, we offer delivery within Metro Manila. Delivery fees may vary
-          depending on location.
-        </div>
-      </div>
+        <a href="faqs.php" class="top-icon-btn" title="FAQs">
+            <span>?</span>
+        </a>
+    </div>
 
-      <div class="faq-item">
-        <div class="faq-question">What payment methods do you accept?</div>
-        <div class="faq-answer">We accept cash payments only upon delivery or pickup.</div>
-      </div>
+    <div class="category-tabs">
+        <?php foreach ($categories as $index => $category): ?>
+            <button
+                type="button"
+                class="category-btn <?= $index === 0 ? 'active' : ''; ?>"
+                data-category="<?= cleanText($category); ?>">
+                <?= cleanText($category); ?>
+            </button>
+        <?php endforeach; ?>
 
-      <div class="faq-item">
-        <div class="faq-question">Can I customize the design of my cake?</div>
-        <div class="faq-answer">
-          Absolutely! You can share your preferred theme, colors, and design
-          ideas, and we’ll bring them to life.
-        </div>
-      </div>
+        <a href="customized-cake.php" class="category-btn">Customized Cake</a>
+    </div>
+</section>
 
-      <div class="faq-item">
-        <div class="faq-question">How can I order a customized cake?</div>
-        <div class="faq-answer">
-          You can contact us through our social media page on Facebook (All
-          About Sweets), reach us via phone at 09274007078, or email us at
-          allaboutsweets@gmail.com
-        </div>
-      </div>
+    <section class="product-grid" id="productGrid">
 
-      <div class="faq-item">
-        <div class="faq-question">How long do the products stay fresh?</div>
-        <div class="faq-answer">
-          Our cakes and pastries are best enjoyed within 3–5 days. Refrigeration
-          is recommended for longer freshness.
-        </div>
-      </div>
+        <?php foreach ($products as $product): ?>
+            <?php
+            $id = (int)($product["id"] ?? $product["product_id"] ?? 0);
+
+            $name =
+                $product["name"] ??
+                $product["product_name"] ??
+                "Product";
+
+            $category =
+                $product["category"] ??
+                "Others";
+
+            $description =
+                $product["description"] ??
+                $product["product_description"] ??
+                "";
+
+            $price = (float)(
+                $product["price"] ??
+                $product["product_price"] ??
+                0
+            );
+
+            $image =
+                $product["image"] ??
+                $product["product_image"] ??
+                $product["image_path"] ??
+                "";
+
+            if (empty($image)) {
+                $image = "assets/default-product.jpg";
+            }
+
+            if (isset($product["is_available"])) {
+                $isAvailable = (int)$product["is_available"] === 1;
+            } elseif (isset($product["availability"])) {
+                $isAvailable = strtolower($product["availability"]) === "available";
+            } elseif (isset($product["status"])) {
+                $isAvailable = strtolower($product["status"]) === "available";
+            } else {
+                $isAvailable = true;
+            }
+            ?>
+
+            <article
+                class="product-card"
+                data-category="<?= cleanText($category); ?>"
+                data-name="<?= cleanText($name); ?>"
+                data-description="<?= cleanText($description); ?>">
+
+                <div class="product-img-wrap">
+                    <img src="<?= cleanText($image); ?>" alt="<?= cleanText($name); ?>">
+                    <span class="product-category"><?= cleanText($category); ?></span>
+                </div>
+
+                <div class="product-info">
+                    <h3><?= cleanText($name); ?></h3>
+
+                    <p><?= cleanText($description); ?></p>
+
+                    <div class="price-row">
+                        <strong>₱<?= number_format($price, 2); ?></strong>
+
+                        <?php if ($isAvailable): ?>
+                            <span class="stock available">Available</span>
+                        <?php else: ?>
+                            <span class="stock out">Out of Stock</span>
+                        <?php endif; ?>
+                    </div>
+
+                   <?php
+$isAdmin = ($_SESSION['role'] ?? '') === 'admin';
+?>
+
+<?php if ($isAvailable && !$isAdmin): ?>
+
+    <button
+        type="button"
+        class="btn-primary"
+        onclick="addToCart(
+            <?= $id; ?>,
+            '<?= addslashes($name); ?>',
+            <?= $price; ?>,
+            '<?= addslashes($image); ?>'
+        )">
+
+        Add to Cart
+
+    </button>
+
+            <?php elseif ($isAdmin): ?>
+
+                <button
+                    type="button"
+                    class="btn-disabled"
+                    disabled>
+                    Admin View
+                </button>
+            <?php else: ?>
+
+                <button
+                    type="button"
+                    class="btn-disabled"
+                    disabled>
+                    Out of Stock
+                </button>
+            <?php endif; ?>
+                </div>
+            </article>
+        <?php endforeach; ?>
+
     </section>
 
-    <!-- Call-to-action -->
-    <section class="cta-section">
-      <h2>Ready to Order?</h2>
-      <p>Treat yourself or someone special to our delicious homemade sweets</p>
-      <a href="ordernow.html"> 
-      <button class="cta-button">Start Your Order</button>
-      </a>
-    </section>
+</main>
 
-    <!-- Footer -->
-    <footer>
-      <h3>All About Sweets</h3>
-      <p>Handcrafted with love since 2016</p>
-        <ul class="footer-links">
-        <li><a href="#hero">Home</a></li>
-        <!-- <li><a href="flavors.php">Flavors</a></li> -->
-        <li><a href="index.php#story">Story</a></li>
-        <li><a href="blog.php">Blog</a></li>
-        <li><a href="blog.php#faq">FAQ</a></li>
-      </ul>
-      <small>© 2026 All About Sweets. All rights reserved.</small>
-    </footer>
+<footer class="footer">
+    <div class="footer-content">
+
+        <div class="footer-brand">
+            <h2>All About Sweets</h2>
+            <p>
+                Fresh pastries, cakes, cookies, and customized sweets
+                made with love for every celebration.
+            </p>
+        </div>
+
+        <div class="footer-links">
+            <h3>Quick Links</h3>
+            <a href="index.php">Home</a>
+            <a href="customized-cake.php">Customized Cake</a>
+            <a href="story.php">About Us</a>
+            <a href="reviews.php">Reviews</a>
+            <a href="faqs.php">FAQs</a>
+        </div>
+
+        <div class="footer-contact">
+            <h3>Contact</h3>
+
+            <p>
+                Email:
+                <a href="mailto:allaboutsweetsadmin@gmail.com">
+                    allaboutsweetsadmin@gmail.com
+                </a>
+            </p>
+
+            <p>
+                Facebook:
+                <a href="https://web.facebook.com/Jsweetsandpastries" target="_blank">
+                    All About Sweets
+                </a>
+            </p>
+
+            <p>
+                Contact Number:
+                <a href="tel:+639274007078">
+                    +63 927 400 7078
+                </a>
+            </p>
+
+            <p>Valenzuela City, Philippines</p>
+            <p>Open Daily • 8:00 AM - 5:00 PM</p>
+        </div>
+
+    </div>
+
+    <div class="footer-bottom">
+        <p>© 2026 All About Sweets. All Rights Reserved.</p>
+    </div>
+</footer>
+<script src="cart.js"></script>
 
 <script>
-  // FAQ TOGGLE
-  const questions = document.querySelectorAll(".faq-question");
+const searchInput = document.getElementById("productSearch");
+const categoryButtons = document.querySelectorAll(".category-btn[data-category]");
+const productCards = document.querySelectorAll(".product-card");
 
-  questions.forEach((question) => {
-    question.addEventListener("click", () => {
-      const answer = question.nextElementSibling;
+let selectedCategory = "All";
 
-      // close other open faqs
-      document.querySelectorAll(".faq-answer").forEach((item) => {
-        if (item !== answer) {
-          item.classList.remove("open");
-        }
-      });
+function filterProducts() {
+    const searchValue = searchInput.value.toLowerCase();
 
-      document.querySelectorAll(".faq-question").forEach((item) => {
-        if (item !== question) {
-          item.classList.remove("active");
-        }
-      });
+    productCards.forEach(card => {
+        const name = card.dataset.name.toLowerCase();
+        const description = card.dataset.description.toLowerCase();
+        const category = card.dataset.category;
 
-      // toggle clicked faq
-      question.classList.toggle("active");
-      answer.classList.toggle("open");
+        const matchesSearch =
+            name.includes(searchValue) ||
+            description.includes(searchValue) ||
+            category.toLowerCase().includes(searchValue);
+
+        const matchesCategory =
+            selectedCategory === "All" ||
+            category === selectedCategory;
+
+        card.style.display = matchesSearch && matchesCategory ? "block" : "none";
     });
-  });
+}
+
+searchInput.addEventListener("input", filterProducts);
+
+categoryButtons.forEach(button => {
+    button.addEventListener("click", () => {
+        categoryButtons.forEach(btn => btn.classList.remove("active"));
+        button.classList.add("active");
+
+        selectedCategory = button.dataset.category;
+        filterProducts();
+    });
+});
 </script>
-  </body>
+
+</body>
 </html>
