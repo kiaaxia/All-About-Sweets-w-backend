@@ -151,3 +151,100 @@ small {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* TOP TOAST NOTIFICATION */
+
+.toast-notification {
+  position: fixed;
+  top: 22px;
+  right: 24px;
+  z-index: 9999;
+
+  background: #8b4513;
+  color: #fff;
+
+  min-width: 280px;
+  max-width: 420px;
+
+  padding: 15px 18px;
+  border-radius: 16px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: 0.35s ease;
+}
+
+.toast-notification.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast-notification button {
+  border: none;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.toast-notification button:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* MOBILE TOAST */
+@media (max-width: 760px) {
+  .toast-notification {
+    top: 12px;
+    left: 12px;
+    right: 12px;
+
+    min-width: unset;
+    max-width: unset;
+
+    padding: 14px 15px;
+    border-radius: 14px;
+
+    font-size: 13px;
+  }
+
+  .toast-notification button {
+    width: 26px;
+    height: 26px;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+}
+
+/* for archived products */
+.restore-btn {
+  background: #2e7d32;
+  color: #fff;
+}
+
+.restore-btn:hover {
+  background: #1f5d24;
+}
+
+.danger-btn {
+  background: #c62828;
+  color: #fff;
+}
+
+.danger-btn:hover {
+  background: #991b1b;
+}

@@ -75,9 +75,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $price = (float) $_POST["price"];
         $availability = $_POST["availability"] ?? "Available";
         $description = trim($_POST["description"] ?? "");
-        $image = "assets/default-product.jpg";
+        $image = $_POST["current_image"] ?? "assets/default-product.jpg";
 
-        if (!empty($_FILES["image"]["name"])) {
+        if (!empty($_FILES["product_image"]["name"])) {
 
             $uploadDir = "uploads/products/";
 
@@ -85,13 +85,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 mkdir($uploadDir, 0777, true);
             }
 
-            $fileName = time() . "_" . basename($_FILES["image"]["name"]);
+            $fileName = time() . "_" . basename($_FILES["product_image"]["name"]);
 
             $targetFile = $uploadDir . $fileName;
 
             if (
                 move_uploaded_file(
-                    $_FILES["image"]["tmp_name"],
+                    $_FILES["product_image"]["tmp_name"],
                     $targetFile
                 )
             ) {
@@ -114,9 +114,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if ($action === "update_order_status") {
         $orderId = (int) $_POST["order_id"];
         $status = $_POST["status"];
-        $stmt = mysqli_prepare($conn, "UPDATE orders SET status = ? WHERE id = ?");
-        mysqli_stmt_bind_param($stmt, "si", $status, $orderId);
-        $message = mysqli_stmt_execute($stmt) ? "Order status updated." : "Could not update order.";
+        $estimatedTime = !empty($_POST["estimated_time"]) ? $_POST["estimated_time"] : null;
+
+        $stmt = mysqli_prepare(
+            $conn,
+            "UPDATE orders SET status = ?, estimated_time = ? WHERE id = ?"
+        );
+
+        mysqli_stmt_bind_param($stmt, "ssi", $status, $estimatedTime, $orderId);
+
+        $message = mysqli_stmt_execute($stmt)
+            ? "Order status updated."
+            : "Could not update order.";
     }
 
     if ($action === "update_custom_status") {
@@ -216,7 +225,7 @@ if ($res)
                         <option>Cakes</option>
                         <option>Cookies</option>
                         <option>Bread</option>
-                        <option>Drinks</option>
+                        <option>Other Pastries</option>
                     </select>
                     <input type="number" step="0.01" name="price" placeholder="Price" required>
                     <select name="availability">
@@ -251,11 +260,30 @@ if ($res)
                                 </tr><?php endif; ?>
                             <?php foreach ($products as $p): ?>
                                 <tr>
-                                    <form method="POST">
+                                    <form method="POST" enctype="multipart/form-data">
                                         <td><input type="text" name="name" value="<?= htmlspecialchars($p['name']); ?>">
                                         </td>
-                                        <td><input type="text" name="category"
-                                                value="<?= htmlspecialchars($p['category']); ?>"></td>
+                                        <td>
+                                            <select name="category">
+
+                                                <option value="Bread" <?= $p['category'] === 'Bread' ? 'selected' : ''; ?>>
+                                                    Bread
+                                                </option>
+
+                                                <option value="Cakes" <?= $p['category'] === 'Cakes' ? 'selected' : ''; ?>>
+                                                    Cakes
+                                                </option>
+
+                                                <option value="Cookies" <?= $p['category'] === 'Cookies' ? 'selected' : ''; ?>>
+                                                    Cookies
+                                                </option>
+
+                                                <option value="Other Pastries" <?= $p['category'] === 'Other Pastries' ? 'selected' : ''; ?>>
+                                                    Other Pastries
+                                                </option>
+
+                                            </select>
+                                        </td>
                                         <td><input type="number" step="0.01" name="price"
                                                 value="<?= htmlspecialchars($p['price']); ?>"></td>
                                         <td><select name="availability">
@@ -264,7 +292,13 @@ if ($res)
                                                 <option <?= $p['availability'] === 'Out of Stock' ? 'selected' : ''; ?>>Out of
                                                     Stock</option>
                                             </select></td>
-                                        <td><input type="file" name="product_image" accept="image/*">
+                                        <td>
+
+                                            <input type="hidden" name="current_image"
+                                                value="<?= htmlspecialchars($p['image']); ?>">
+
+                                            <input type="file" name="product_image" accept="image/*">
+
                                         </td>
                                         <td><textarea
                                                 name="description"><?= htmlspecialchars($p['description']); ?></textarea>
@@ -313,16 +347,31 @@ if ($res)
                                     <td><?= htmlspecialchars($o['status']); ?></td>
                                     <td><?= htmlspecialchars($o['created_at']); ?></td>
                                     <td>
-                                        <form method="POST"><input type="hidden" name="order_id"
-                                                value="<?= (int) $o['id']; ?>"><select name="status">
-                                                <option>Pending</option>
-                                                <option>Accepted</option>
-                                                <option>Preparing</option>
-                                                <option>Ready for Pickup</option>
-                                                <option>Delivered</option>
-                                                <option>Completed</option>
-                                                <option>Cancelled</option>
-                                            </select><button name="action" value="update_order_status">Save</button></form>
+                                        <form method="POST" class="status-form">
+                                            <input type="hidden" name="order_id" value="<?= (int) $o['id']; ?>">
+
+                                            <select name="status">
+                                                <option <?= $o['status'] === 'Pending' ? 'selected' : ''; ?>>Pending</option>
+                                                <option <?= $o['status'] === 'Accepted' ? 'selected' : ''; ?>>Accepted</option>
+                                                <option <?= $o['status'] === 'Preparing' ? 'selected' : ''; ?>>Preparing
+                                                </option>
+                                                <option <?= $o['status'] === 'Ready for Pickup' ? 'selected' : ''; ?>>Ready for
+                                                    Pickup</option>
+                                                <option <?= $o['status'] === 'Out for Delivery' ? 'selected' : ''; ?>>Out for
+                                                    Delivery</option>
+                                                <option <?= $o['status'] === 'Delivered' ? 'selected' : ''; ?>>Delivered
+                                                </option>
+                                                <option <?= $o['status'] === 'Completed' ? 'selected' : ''; ?>>Completed
+                                                </option>
+                                                <option <?= $o['status'] === 'Cancelled' ? 'selected' : ''; ?>>Cancelled
+                                                </option>
+                                            </select>
+
+                                            <input type="datetime-local" name="estimated_time"
+                                                value="<?= !empty($o['estimated_time']) ? date('Y-m-d\TH:i', strtotime($o['estimated_time'])) : ''; ?>">
+
+                                            <button name="action" value="update_order_status">Save</button>
+                                        </form>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

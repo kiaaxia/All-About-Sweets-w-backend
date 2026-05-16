@@ -43,7 +43,7 @@ function activePage($page, $currentPage) {
             <?php endif; ?>
 
             <a class="profile-link <?= activePage('user-profile.php', $currentPage); ?>" href="user-profile.php" title="Profile">
-                <img src="assets/user.png" alt="Profile" class="profile-icon">
+                <img src="assets/profile-icon.png" alt="Profile" class="profile-icon">
                 <span class="nav-label">Me</span>
             </a>
         <?php else: ?>
