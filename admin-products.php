@@ -9,100 +9,66 @@ if (!isset($_SESSION["user_id"]) || ($_SESSION["role"] ?? "customer") !== "admin
 
 $message = "";
 
-function uploadImageFile($fieldName, $uploadDir) {
-    if (empty($_FILES[$fieldName]["name"])) {
-        return "";
-    }
-
-    if (!is_dir($uploadDir)) {
-        mkdir($uploadDir, 0777, true);
-    }
-
-    $extension = strtolower(pathinfo($_FILES[$fieldName]["name"], PATHINFO_EXTENSION));
-    $allowed = ["jpg", "jpeg", "png", "webp", "gif"];
-
-    if (!in_array($extension, $allowed)) {
-        return "";
-    }
-
-    $fileName = time() . "_" . bin2hex(random_bytes(4)) . "." . $extension;
-    $targetFile = $uploadDir . $fileName;
-
-    if (move_uploaded_file($_FILES[$fieldName]["tmp_name"], $targetFile)) {
-        return $targetFile;
-    }
-
-    return "";
+/* Helper: upload product image, return path or existing path */
+function uploadProductImage(string $field, string $existing = ""): string {
+    if (empty($_FILES[$field]["name"])) return $existing;
+    $uploadDir = "uploads/products/";
+    if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+    $ext = strtolower(pathinfo($_FILES[$field]["name"], PATHINFO_EXTENSION));
+    $allowed = ["jpg","jpeg","png","webp","gif"];
+    if (!in_array($ext, $allowed)) return $existing;
+    $fileName = time() . "_" . basename($_FILES[$field]["name"]);
+    $target   = $uploadDir . $fileName;
+    if (move_uploaded_file($_FILES[$field]["tmp_name"], $target)) return $target;
+    return $existing;
 }
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $action = $_POST["action"] ?? "";
 
     if ($action === "add_product") {
-        $name = trim($_POST["name"] ?? "");
-        $category = trim($_POST["category"] ?? "");
-        $price = (float)($_POST["price"] ?? 0);
+        $name         = trim($_POST["name"] ?? "");
+        $category     = trim($_POST["category"] ?? "");
+        $description  = trim($_POST["description"] ?? "");
+        $price        = (float)($_POST["price"] ?? 0);
         $availability = $_POST["availability"] ?? "Available";
-        $description = trim($_POST["description"] ?? "");
-        $image = uploadImageFile("product_image", "uploads/products/");
+        $image        = uploadProductImage("image_file", "assets/default-product.jpg");
 
-        if ($image === "") {
-            $image = "assets/default-product.jpg";
-        }
-
-        $stmt = mysqli_prepare($conn, "INSERT INTO products (name, category, price, availability, image, description, is_archived) VALUES (?, ?, ?, ?, ?, ?, 0)");
-        mysqli_stmt_bind_param($stmt, "ssdsss", $name, $category, $price, $availability, $image, $description);
-        $message = mysqli_stmt_execute($stmt) ? "Product added successfully." : "Could not add product.";
+        $stmt = mysqli_prepare($conn,
+            "INSERT INTO products (name, category, description, price, image, availability, is_archived)
+             VALUES (?, ?, ?, ?, ?, ?, 0)"
+        );
+        mysqli_stmt_bind_param($stmt, "sssdss", $name, $category, $description, $price, $image, $availability);
+        $message = mysqli_stmt_execute($stmt) ? "✓ Product added successfully." : "Error adding product.";
     }
 
     if ($action === "update_product") {
-        $productId = (int)($_POST["product_id"] ?? 0);
-        $name = trim($_POST["name"] ?? "");
-        $category = trim($_POST["category"] ?? "");
-        $price = (float)($_POST["price"] ?? 0);
+        $productId    = (int)$_POST["product_id"];
+        $name         = trim($_POST["name"] ?? "");
+        $category     = trim($_POST["category"] ?? "");
+        $price        = (float)$_POST["price"];
         $availability = $_POST["availability"] ?? "Available";
-        $description = trim($_POST["description"] ?? "");
-        $image = $_POST["current_image"] ?? "assets/default-product.jpg";
+        $description  = trim($_POST["description"] ?? "");
+        $image        = uploadProductImage("image_file_" . $productId, $_POST["existing_image"] ?? "");
 
-        $newImage = uploadImageFile("product_image", "uploads/products/");
-        if ($newImage !== "") {
-            $image = $newImage;
-        }
-
-        $stmt = mysqli_prepare($conn, "UPDATE products SET name=?, category=?, price=?, availability=?, image=?, description=? WHERE id=?");
-        mysqli_stmt_bind_param($stmt, "ssdsssi", $name, $category, $price, $availability, $image, $description, $productId);
-        $message = mysqli_stmt_execute($stmt) ? "Product updated successfully." : "Could not update product.";
+        $stmt = mysqli_prepare($conn,
+            "UPDATE products SET name=?, category=?, price=?, availability=?, description=?, image=? WHERE id=?"
+        );
+        mysqli_stmt_bind_param($stmt, "ssdsssi", $name, $category, $price, $availability, $description, $image, $productId);
+        $message = mysqli_stmt_execute($stmt) ? "✓ Product updated." : "Error updating product.";
     }
 
     if ($action === "archive_product") {
-        $productId = (int)($_POST["product_id"] ?? 0);
+        $productId = (int)$_POST["product_id"];
         $stmt = mysqli_prepare($conn, "UPDATE products SET is_archived = 1 WHERE id = ?");
         mysqli_stmt_bind_param($stmt, "i", $productId);
-        $message = mysqli_stmt_execute($stmt) ? "Product archived successfully." : "Could not archive product.";
-    }
-
-    if ($action === "restore_product") {
-        $productId = (int)($_POST["product_id"] ?? 0);
-        $stmt = mysqli_prepare($conn, "UPDATE products SET is_archived = 0 WHERE id = ?");
-        mysqli_stmt_bind_param($stmt, "i", $productId);
-        $message = mysqli_stmt_execute($stmt) ? "Product restored successfully." : "Could not restore product.";
-    }
-
-    if ($action === "delete_product") {
-        $productId = (int)($_POST["product_id"] ?? 0);
-        $stmt = mysqli_prepare($conn, "DELETE FROM products WHERE id = ?");
-        mysqli_stmt_bind_param($stmt, "i", $productId);
-        $message = mysqli_stmt_execute($stmt) ? "Product deleted permanently." : "Could not delete product.";
+        $message = mysqli_stmt_execute($stmt) ? "✓ Product archived." : "Error archiving product.";
     }
 }
 
 $products = [];
 $res = mysqli_query($conn, "SELECT * FROM products WHERE COALESCE(is_archived,0)=0 ORDER BY category, name");
 if ($res) while ($row = mysqli_fetch_assoc($res)) $products[] = $row;
-
-$archivedProducts = [];
-$res = mysqli_query($conn, "SELECT * FROM products WHERE COALESCE(is_archived,0)=1 ORDER BY category, name");
-if ($res) while ($row = mysqli_fetch_assoc($res)) $archivedProducts[] = $row;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -111,6 +77,172 @@ if ($res) while ($row = mysqli_fetch_assoc($res)) $archivedProducts[] = $row;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Products | All About Sweets</title>
     <link rel="stylesheet" href="admin-dashboard.css">
+    <style>
+        /* ── Product card grid ──────────────────────────── */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 18px;
+            margin-top: 16px;
+        }
+
+        .product-card {
+            background: var(--white);
+            border: 1.5px solid var(--cream-border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            transition: box-shadow var(--transition), transform var(--transition);
+        }
+
+        .product-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .product-card-img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            background: var(--cream);
+            display: block;
+        }
+
+        .product-card-img-placeholder {
+            width: 100%;
+            height: 160px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--cream);
+            color: var(--text-mid);
+            font-size: 36px;
+        }
+
+        .product-card-body {
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .product-card-body label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-mid);
+            margin-bottom: 2px;
+        }
+
+        .product-card-body input,
+        .product-card-body select,
+        .product-card-body textarea {
+            font-size: 13px;
+            padding: 8px 10px;
+        }
+
+        .product-card-body textarea { min-height: 56px; }
+
+        .product-card-body .field-group { display: flex; flex-direction: column; }
+
+        /* Image upload area */
+        .img-upload-area {
+            border: 2px dashed var(--cream-border);
+            border-radius: var(--radius-sm);
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color var(--transition), background var(--transition);
+            position: relative;
+        }
+
+        .img-upload-area:hover {
+            border-color: var(--brown-light);
+            background: #fffaf5;
+        }
+
+        .img-upload-area input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        .img-upload-area p {
+            font-size: 12px;
+            color: var(--text-mid);
+            pointer-events: none;
+        }
+
+        .img-upload-area .upload-icon {
+            font-size: 22px;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .img-preview-thumb {
+            width: 56px;
+            height: 56px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid var(--cream-border);
+            display: block;
+            margin: 0 auto 6px;
+        }
+
+        .product-card-actions {
+            display: flex;
+            gap: 8px;
+            padding: 12px 16px;
+            border-top: 1px solid var(--cream-border);
+            background: var(--cream-light);
+        }
+
+        .product-card-actions button {
+            flex: 1;
+            font-size: 13px;
+            padding: 9px 10px;
+        }
+
+        /* Add product form */
+        .add-product-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            align-items: end;
+        }
+
+        .add-product-form .field-group { display: flex; flex-direction: column; }
+        .add-product-form label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-mid); margin-bottom: 3px; }
+
+        .add-img-upload {
+            border: 2px dashed var(--cream-border);
+            border-radius: var(--radius-sm);
+            padding: 16px 12px;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            transition: border-color var(--transition), background var(--transition);
+        }
+
+        .add-img-upload:hover { border-color: var(--brown-light); background: #fffaf5; }
+
+        .add-img-upload input[type="file"] {
+            position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+        }
+
+        .add-img-upload p { font-size: 12px; color: var(--text-mid); pointer-events: none; }
+        .add-img-upload .upload-icon { font-size: 24px; display: block; margin-bottom: 4px; }
+
+        @media (max-width: 560px) {
+            .product-grid { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
 <div class="admin-layout">
@@ -124,126 +256,185 @@ if ($res) while ($row = mysqli_fetch_assoc($res)) $archivedProducts[] = $row;
             </div>
         <?php endif; ?>
 
-        <section class="admin-header">
-            <p class="admin-eyebrow">Product Management</p>
-            <h1>Products</h1>
-            <p>Add new items, upload product photos, update prices, and manage product availability.</p>
-        </section>
-
+        <!-- ── Add Product ──────────────────────────────── -->
         <section class="admin-section">
             <h2>Add Product</h2>
-            <form method="POST" enctype="multipart/form-data" class="form-grid product-form">
+            <p class="admin-muted">Fill in the details and upload a product photo.</p>
+
+            <form method="POST" enctype="multipart/form-data" class="add-product-form">
                 <input type="hidden" name="action" value="add_product">
 
-                <div><label>Product Name</label><input type="text" name="name" required></div>
+                <div class="field-group">
+                    <label>Product Name</label>
+                    <input type="text" name="name" placeholder="e.g. Chocolate Truffle Cake" required>
+                </div>
 
-                <div><label>Category</label>
+                <div class="field-group">
+                    <label>Category</label>
                     <select name="category" required>
-                        <option value="">Select category</option>
-                        <option>Bread</option>
+                        <option value="">Select category…</option>
                         <option>Cakes</option>
                         <option>Cookies</option>
-                        <option>Other Pastries</option>
+                        <option>Bread</option>
+                        <option>Drinks</option>
                     </select>
                 </div>
 
-                <div><label>Price</label><input type="number" step="0.01" name="price" min="0" required></div>
+                <div class="field-group">
+                    <label>Price (₱)</label>
+                    <input type="number" step="0.01" min="0" name="price" placeholder="e.g. 850.00" required>
+                </div>
 
-                <div><label>Availability</label>
+                <div class="field-group">
+                    <label>Availability</label>
                     <select name="availability">
                         <option>Available</option>
                         <option>Out of Stock</option>
                     </select>
                 </div>
 
-                <div><label>Product Image</label><input type="file" name="product_image" accept="image/*"></div>
+                <div class="field-group" style="grid-column: 1 / -1;">
+                    <label>Description</label>
+                    <textarea name="description" placeholder="Short description of the product…"></textarea>
+                </div>
 
-                <div class="form-wide"><label>Description</label><textarea name="description" placeholder="Specification and short description..."></textarea></div>
+                <div class="field-group">
+                    <label>Product Photo</label>
+                    <div class="add-img-upload" id="addUploadArea">
+                        <span class="upload-icon">📷</span>
+                        <p id="addUploadLabel">Click or tap to choose a photo</p>
+                        <input type="file" name="image_file" accept="image/*"
+                               onchange="previewAddImage(event)">
+                    </div>
+                    <img id="addImgPreview" class="img-preview-thumb" src="" alt=""
+                         style="display:none; margin-top:8px;">
+                </div>
 
-                <button type="submit">Add Product</button>
+                <div class="field-group" style="align-self:end;">
+                    <button type="submit" style="width:100%; padding:12px;">➕ Add Product</button>
+                </div>
             </form>
         </section>
 
+        <!-- ── Product Cards ────────────────────────────── -->
         <section class="admin-section">
-            <h2>Active Products</h2>
-            <p class="admin-muted">Images are uploaded from the admin's device and saved in <strong>uploads/products</strong>.</p>
+            <h2>Product Management</h2>
+            <p class="admin-muted"><?= count($products); ?> active product(s). Click the photo area to change an image.</p>
 
-            <div class="product-admin-grid">
-                <?php if (empty($products)): ?>
-                    <div class="empty-admin-card">No active products yet.</div>
-                <?php endif; ?>
-
+            <?php if (empty($products)): ?>
+                <p style="color:var(--text-mid); margin-top:12px;">No products yet. Add one above.</p>
+            <?php else: ?>
+            <div class="product-grid">
                 <?php foreach ($products as $p): ?>
-                    <article class="product-admin-card">
-                        <img src="<?= htmlspecialchars($p['image'] ?: 'assets/default-product.jpg'); ?>" alt="Product image">
+                <div class="product-card">
+                    <!-- Product image preview (click to replace) -->
+                    <?php if (!empty($p["image"])): ?>
+                        <img class="product-card-img" src="<?= htmlspecialchars($p["image"]); ?>" alt="<?= htmlspecialchars($p["name"]); ?>">
+                    <?php else: ?>
+                        <div class="product-card-img-placeholder">🍰</div>
+                    <?php endif; ?>
 
-                        <form method="POST" enctype="multipart/form-data" class="product-edit-form">
-                            <input type="hidden" name="product_id" value="<?= (int)$p['id']; ?>">
-                            <input type="hidden" name="current_image" value="<?= htmlspecialchars($p['image']); ?>">
+                    <form method="POST" enctype="multipart/form-data" class="product-card-body">
+                        <input type="hidden" name="action" value="update_product">
+                        <input type="hidden" name="product_id" value="<?= (int)$p["id"]; ?>">
+                        <input type="hidden" name="existing_image" value="<?= htmlspecialchars($p["image"] ?? ""); ?>">
 
-                            <label>Product Name</label>
-                            <input type="text" name="name" value="<?= htmlspecialchars($p['name']); ?>" required>
+                        <div class="field-group">
+                            <label>Name</label>
+                            <input type="text" name="name" value="<?= htmlspecialchars($p["name"]); ?>" required>
+                        </div>
 
-                            <label>Category</label>
-                            <select name="category">
-                                <option value="Bread" <?= $p['category'] === 'Bread' ? 'selected' : ''; ?>>Bread</option>
-                                <option value="Cakes" <?= $p['category'] === 'Cakes' ? 'selected' : ''; ?>>Cakes</option>
-                                <option value="Cookies" <?= $p['category'] === 'Cookies' ? 'selected' : ''; ?>>Cookies</option>
-                                <option value="Other Pastries" <?= $p['category'] === 'Other Pastries' ? 'selected' : ''; ?>>Other Pastries</option>
-                            </select>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                            <div class="field-group">
+                                <label>Category</label>
+                                <input type="text" name="category" value="<?= htmlspecialchars($p["category"]); ?>">
+                            </div>
+                            <div class="field-group">
+                                <label>Price (₱)</label>
+                                <input type="number" step="0.01" name="price" value="<?= htmlspecialchars($p["price"]); ?>">
+                            </div>
+                        </div>
 
-                            <label>Price</label>
-                            <input type="number" step="0.01" name="price" value="<?= htmlspecialchars($p['price']); ?>" required>
-
+                        <div class="field-group">
                             <label>Availability</label>
                             <select name="availability">
-                                <option <?= $p['availability'] === 'Available' ? 'selected' : ''; ?>>Available</option>
-                                <option <?= $p['availability'] === 'Out of Stock' ? 'selected' : ''; ?>>Out of Stock</option>
+                                <option <?= $p["availability"] === "Available" ? "selected" : ""; ?>>Available</option>
+                                <option <?= $p["availability"] === "Out of Stock" ? "selected" : ""; ?>>Out of Stock</option>
                             </select>
+                        </div>
 
-                            <label>Replace Image</label>
-                            <input type="file" name="product_image" accept="image/*">
-
+                        <div class="field-group">
                             <label>Description</label>
-                            <textarea name="description"><?= htmlspecialchars($p['description']); ?></textarea>
+                            <textarea name="description"><?= htmlspecialchars($p["description"] ?? ""); ?></textarea>
+                        </div>
 
-                            <div class="button-row">
-                                <button name="action" value="update_product">Update</button>
-                                <button name="action" value="archive_product" class="danger-btn" onclick="return confirm('Archive this product?')">Archive</button>
+                        <!-- Photo replace area -->
+                        <div class="field-group">
+                            <label>Replace Photo</label>
+                            <div class="img-upload-area" id="uploadArea_<?= (int)$p["id"]; ?>">
+                                <span class="upload-icon">📷</span>
+                                <p id="uploadLabel_<?= (int)$p["id"]; ?>">Click or tap to choose a new photo</p>
+                                <input type="file" name="image_file_<?= (int)$p["id"]; ?>" accept="image/*"
+                                       onchange="previewProductImage(event, <?= (int)$p["id"]; ?>)">
                             </div>
+                            <img id="preview_<?= (int)$p["id"]; ?>"
+                                 class="img-preview-thumb" src="" alt=""
+                                 style="display:none; margin-top:6px;">
+                        </div>
+
+                        <div class="product-card-actions" style="padding:0; background:none; border:none; margin-top:auto;">
+                            <button type="submit" name="action" value="update_product">💾 Save</button>
+                        </div>
+                    </form>
+
+                    <!-- Archive is a separate form so it doesn't conflict -->
+                    <div class="product-card-actions">
+                        <form method="POST" style="flex:1;">
+                            <input type="hidden" name="action" value="archive_product">
+                            <input type="hidden" name="product_id" value="<?= (int)$p["id"]; ?>">
+                            <button type="submit" class="danger-btn" style="width:100%;"
+                                    onclick="return confirm('Archive &quot;<?= htmlspecialchars(addslashes($p["name"])); ?>&quot;? It will be hidden from the store.')">
+                                🗂 Archive
+                            </button>
                         </form>
-                    </article>
-                <?php endforeach; ?>
-            </div>
-        </section>
-
-        <section class="admin-section">
-            <h2>Archived Products</h2>
-            <div class="compact-list">
-                <?php if (empty($archivedProducts)): ?>
-                    <p>No archived products.</p>
-                <?php endif; ?>
-
-                <?php foreach ($archivedProducts as $p): ?>
-                    <div class="compact-item">
-                        <div>
-                            <strong><?= htmlspecialchars($p['name']); ?></strong>
-                            <span><?= htmlspecialchars($p['category']); ?> • ₱<?= number_format((float)$p['price'], 2); ?></span>
-                        </div>
-
-                        <div class="button-row">
-                            <form method="POST"><input type="hidden" name="product_id" value="<?= (int)$p['id']; ?>"><button name="action" value="restore_product" class="restore-btn">Restore</button></form>
-                            <form method="POST" onsubmit="return confirm('Permanently delete this product?');"><input type="hidden" name="product_id" value="<?= (int)$p['id']; ?>"><button name="action" value="delete_product" class="danger-btn">Delete</button></form>
-                        </div>
                     </div>
+                </div>
                 <?php endforeach; ?>
             </div>
+            <?php endif; ?>
         </section>
     </main>
 </div>
+
 <script>
-function closeToast(){const toast=document.getElementById('toastNotification'); if(toast) toast.classList.remove('show');}
-const toast=document.getElementById('toastNotification'); if(toast) setTimeout(()=>toast.classList.remove('show'),3500);
+/* ── Image previews ──────────────────────────────────── */
+function previewProductImage(event, productId) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const preview = document.getElementById("preview_" + productId);
+    const label   = document.getElementById("uploadLabel_" + productId);
+    preview.src = URL.createObjectURL(file);
+    preview.style.display = "block";
+    if (label) label.textContent = file.name;
+}
+
+function previewAddImage(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const preview = document.getElementById("addImgPreview");
+    const label   = document.getElementById("addUploadLabel");
+    preview.src = URL.createObjectURL(file);
+    preview.style.display = "block";
+    if (label) label.textContent = file.name;
+}
+
+/* ── Toast ───────────────────────────────────────────── */
+function closeToast() {
+    const toast = document.getElementById("toastNotification");
+    if (toast) toast.classList.remove("show");
+}
+const toast = document.getElementById("toastNotification");
+if (toast) setTimeout(() => toast.classList.remove("show"), 3500);
 </script>
 </body>
 </html>
