@@ -1260,169 +1260,96 @@ body {
   max-height: 90vh;
   object-fit: contain;
 }
-/* ===== FINAL ORDER / DELIVERY / REVIEW REVISION ADDITIONS ===== */
-.profile-page .content-card {
-  overflow: hidden;
-}
 
-.fixed-profile-icon {
-  width: 115px;
-  height: 115px;
-  border-radius: 50%;
-  background: #fff;
-  border: 4px solid #8b4513;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 52px;
-  color: #8b4513;
-  margin: 14px auto 22px;
-}
 
-.profile-card-clean {
-  text-align: center;
-}
-
-.profile-btn {
-  display: block;
-  width: 100%;
-  margin: 10px auto;
-}
-
-.order-tracking-list {
-  display: grid;
-  gap: 16px;
-}
-
-.tracking-card {
-  background: #fffaf5;
-  border: 1px solid #e7c39c;
-  border-radius: 18px;
-  padding: 18px;
-  box-shadow: 0 8px 20px rgba(75, 43, 17, 0.08);
-}
-
-.tracking-head {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.tracking-head h3 {
-  margin: 0 0 5px;
-  color: #7a3e00;
-}
-
-.tracking-head p,
-.tracking-card p {
-  margin: 6px 0;
-  color: #6b4c3b;
-}
-
-.status-badge {
-  display: inline-block;
-  padding: 7px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 800;
-  background: #f2dfc9;
-  color: #7a3e00;
-  height: fit-content;
-  white-space: nowrap;
-}
-
-.status-badge.pending,
-.status-badge.pending-quotation,
-.status-badge.quoted,
-.status-badge.payment-submitted {
-  background: #fff0c2;
-  color: #8a5a00;
-}
-
-.status-badge.accepted,
-.status-badge.payment-verified,
-.status-badge.completed,
-.status-badge.delivered {
-  background: #d6f5dd;
-  color: #0b7a34;
-}
-
-.status-badge.preparing {
-  background: #e8dcff;
-  color: #6a1b9a;
-}
-
-.status-badge.out-for-delivery,
-.status-badge.ready-for-pickup {
-  background: #d8ecff;
-  color: #075a9c;
-}
-
-.status-badge.cancelled,
-.status-badge.quotation-rejected {
-  background: #ffd6d6;
-  color: #b00020;
-}
-
-.proof-preview,
 .gcash-qr {
   width: 220px !important;
   max-width: 100% !important;
   height: auto !important;
   display: block;
-  margin: 12px auto;
+  margin: 14px auto;
   border-radius: 16px;
   border: 1px solid #d8b58d;
+}
+
+.qr-clickable {
   cursor: pointer;
 }
 
-.media-lightbox {
+.qr-lightbox {
   position: fixed;
   inset: 0;
   background: rgba(45, 30, 23, 0.45);
-  backdrop-filter: blur(7px);
+  backdrop-filter: blur(6px);
+
   display: none;
   align-items: center;
   justify-content: center;
+
   z-index: 99999;
   padding: 20px;
 }
 
-.media-lightbox.show {
+.qr-lightbox.show {
   display: flex;
 }
 
-.media-lightbox-content {
+.qr-lightbox-content {
   position: relative;
-  max-width: 92vw;
-  max-height: 88vh;
+
+  background: transparent;
+
+  padding: 0;
+
+  width: auto;
+  max-width: 90vw;
+
+  border-radius: 22px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.media-lightbox-content img {
-  width: auto !important;
-  max-width: 92vw !important;
-  max-height: 85vh !important;
-  height: auto !important;
+.qr-lightbox-content img {
+  width: auto;
+  max-width: 100%;
+  max-height: 75vh;
+
+  height: auto;
+
+  display: block;
+  margin: auto;
+
+  border-radius: 16px;
   object-fit: contain;
-  border-radius: 18px;
-  background: #fff;
-  padding: 8px;
 }
 
-.media-close {
+.qr-lightbox-close {
   position: absolute;
   top: -14px;
   right: -14px;
+
   width: 38px;
   height: 38px;
+
   border-radius: 50%;
   border: none;
+
   background: #8b4513;
   color: #fff;
+
   font-size: 22px;
   cursor: pointer;
-  z-index: 2;
+}
+
+
+/* for "file upload" styling */
+/* PRETTY FILE UPLOAD */
+
+.file-upload {
+  display: block;
+  width: 100%;
 }
 
 .file-upload input[type="file"] {
@@ -1442,6 +1369,12 @@ body {
   gap: 10px;
   font-weight: 800;
   cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.file-upload-label:hover {
+  background: #fff3e6;
+  border-color: #8b4513;
 }
 
 .file-upload-name {
@@ -1451,65 +1384,9 @@ body {
   text-align: center;
 }
 
-.file-error,
-.error-text {
+.file-error {
+  margin-top: 8px;
   color: #c62828;
   font-size: 13px;
   font-weight: 700;
-}
-
-.review-submit-form {
-  display: grid;
-  gap: 14px;
-}
-
-.review-submit-form textarea {
-  min-height: 130px;
-}
-
-.star-rating-input {
-  display: inline-flex;
-  flex-direction: row-reverse;
-  justify-content: flex-end;
-  gap: 4px;
-}
-
-.star-rating-input input {
-  display: none;
-}
-
-.star-rating-input label {
-  font-size: 32px;
-  color: #d2b99f;
-  cursor: pointer;
-}
-
-.star-rating-input input:checked ~ label,
-.star-rating-input label:hover,
-.star-rating-input label:hover ~ label {
-  color: #d99b00;
-}
-
-.enhanced-review-card {
-  overflow: hidden;
-}
-
-.review-photo {
-  width: 100%;
-  height: 190px;
-  object-fit: cover;
-  display: block;
-  border-radius: 14px;
-  margin-bottom: 12px;
-}
-
-@media (max-width: 760px) {
-  .tracking-head {
-    flex-direction: column;
-  }
-
-  .proof-preview,
-  .gcash-qr {
-    width: 190px !important;
-  }
 }
